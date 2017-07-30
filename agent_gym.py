@@ -64,6 +64,9 @@ class AGENT_GYM(gym.Env):
         self.agent_num = agent_num
         self.city_dis = city_dis
 
+        print np.where(self.source_pos == [0,0])[0]
+        print np.where(self.hole_pos == [4,0])[0]
+
         self.time = 0
         self.initAgent(self.hole_pos, self.source_pos, self.agent_num)
 

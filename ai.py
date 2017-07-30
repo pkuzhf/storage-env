@@ -16,7 +16,7 @@ env.seed(config.Game.Seed)
 for i_episode in range(1):
     observation = env.reset()
     print observation
-    for t in range(30):
+    for t in range(20):
         env.render()
         action = []
         for i in range(agent_num):
