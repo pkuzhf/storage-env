@@ -29,7 +29,10 @@ class AGENT_GYM(gym.Env):
         self.agent_city = agent_city
         self.agent_reward = agent_reward
 
-    def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city):
+    def genCity(city_dis):
+        return np.where(np.random.multinomial(1, city_dis, size=1) == 1)[0][0]
+
+    def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis):
 
         # t = ()
         # for i in range(agent_num):
@@ -59,6 +62,8 @@ class AGENT_GYM(gym.Env):
         self.hole_pos = hole_pos
         self.hole_city = hole_city
         self.agent_num = agent_num
+        self.city_dis = city_dis
+
         self.time = 0
         self.initAgent(self.hole_pos, self.source_pos, self.agent_num)
 
@@ -82,11 +87,11 @@ class AGENT_GYM(gym.Env):
             [a_x, a_y] = action[i]
             pos = [pos_x + a_x, pos_y + a_y]
             if utils.inMap(pos):
-                if len(np.nonzero(self.source_pos == pos)[0]) > 0: # source
+                if len(np.where(self.source_pos == pos)[0]) > 0: # source
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
-                        self.agent_city[i] = genCity()
-                elif len(np.nonzero(self.hole_pos == pos)[0]) > 0: # hole
+                        self.agent_city[i] = genCity(self.city_dis)
+                elif len(np.where(self.hole_pos == pos)[0]) > 0: # hole
                     hole_idx = np.nonzero(self.source_pos == pos)[0][0] 
                     hole_city = self.hole_city[hole_idx]
                     if self.agent_city[i] == hole_city:
@@ -94,7 +99,7 @@ class AGENT_GYM(gym.Env):
                         self.agent_city[i] = -1
                         self.agent_reward[i] += 1
                         reward += 1
-                elif len(np.nonzero(self.agent_pos == pos)[0]) == 0: # path (not agent)
+                elif len(np.where(self.agent_pos == pos)[0]) == 0: # path (not agent)
                     self.agent_pos[i] = pos
 
         self.time += 1
