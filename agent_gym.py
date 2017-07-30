@@ -29,8 +29,8 @@ class AGENT_GYM(gym.Env):
         self.agent_city = agent_city
         self.agent_reward = agent_reward
 
-    def genCity(city_dis):
-        return np.where(np.random.multinomial(1, city_dis, size=1) == 1)[0][0]
+    def genCity(self, city_dis):
+        return np.random.multinomial(1, city_dis, size=1).tolist()[0].index(1)
 
     def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis):
 
@@ -64,8 +64,13 @@ class AGENT_GYM(gym.Env):
         self.agent_num = agent_num
         self.city_dis = city_dis
 
-        print np.where(self.source_pos == [0,0])[0]
-        print np.where(self.hole_pos == [4,0])[0]
+        print source_pos
+        print self.source_pos
+        print self.source_pos.index([0,0])
+
+        print hole_pos
+        print self.hole_pos
+        print self.hole_pos.index([4,0])
 
         self.time = 0
         self.initAgent(self.hole_pos, self.source_pos, self.agent_num)
@@ -90,13 +95,13 @@ class AGENT_GYM(gym.Env):
             [a_x, a_y] = action[i]
             pos = [pos_x + a_x, pos_y + a_y]
             if utils.inMap(pos):
-                if len(np.where(self.source_pos == pos)[0]) > 0: # source
+                if pos in self.source_pos: # source
                     print([i, 'source'])
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
-                        self.agent_city[i] = genCity(self.city_dis)
-                elif len(np.where(self.hole_pos == pos)[0]) > 0: # hole
-                    hole_idx = np.where(self.hole_pos == pos)[0][0]
+                        self.agent_city[i] = self.genCity(self.city_dis)
+                elif pos in self.hole_pos: # hole
+                    hole_idx = self.hole_pos.index(pos)
                     print([i, 'hole'])
                     print(self.agent_city[i], self.hole_city[hole_idx])
                     if self.agent_city[i] == self.hole_city[hole_idx]:
@@ -104,7 +109,7 @@ class AGENT_GYM(gym.Env):
                         self.agent_city[i] = -1
                         self.agent_reward[i] += 1
                         reward += 1
-                elif len(np.where(self.agent_pos == pos)[0]) == 0: # path (not agent)
+                elif pos not in self.agent_pos: # path (not agent)
                     self.agent_pos[i] = pos
                 else:
                     print([i, 'agent'])
