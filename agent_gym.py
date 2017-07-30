@@ -66,7 +66,7 @@ class AGENT_GYM(gym.Env):
     def _reset(self):
         self.time = 0
         [self.agent_pos, self.agent_city, self.agent_reward] = initAgent(self.hole_pos, self.source_pos, self.agent_num)
-        
+        return [self.agent_pos, self.agent_city, self.agent_reward]
 
     def _step(self, action):
 
@@ -98,6 +98,8 @@ class AGENT_GYM(gym.Env):
             done = True
         else:
             done = False
-            
+
+
+        
         return [self.agent_pos, self.agent_city, self.agent_reward], reward, done, {}
 

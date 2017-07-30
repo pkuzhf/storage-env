@@ -2,7 +2,6 @@ class Game:
     Seed = 1234567
     MaxGameStep = 200
     AgentAction = 4
-    
     Type = ''
 
 class Map:
