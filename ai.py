@@ -23,8 +23,10 @@ for i_episode in range(1):
             action.append(utils.dirs[np.random.random_integers(0, 3)])
         print action
         observation, reward, done, info = env.step(action)
-        print(observation)
-        #print(np.shape(observation))
+        [agent_pos, agent_city, agent_reward] = observation
+
+        # TODO: print picture according to source_pos, hole_pos, agent_pos, agent_city, hole_city
+
         if done:
             print("Episode finished after {} timesteps".format(t+1))
             break
