@@ -19,7 +19,7 @@ class AGENT_GYM(gym.Env):
             while True:
                 x = np.random.random_integers(0, config.Map.Height-1)
                 y = np.random.random_integers(0, config.Map.Width-1)
-                if [x,y] not in hole_pos and [x,y] not in source_pos and [x,y] not in agent_pos:
+                if [x,y] not in hole_pos and [x,y] not in source_pos and [x,y] not in self.agent_pos:
                     self.agent_pos.append([x,y])
                     break
         self.agent_city = [-1] * agent_num
