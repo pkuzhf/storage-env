@@ -34,7 +34,8 @@ def calcHole(map):
                 n_hole += 1
     return n_hole
 
-def inMap(x, y):
+def inMap(pos):
+    [x, y] = pos
     return x >= 0 and x < config.Map.Height and y >= 0 and y < config.Map.Width
 
 def findSourceAndTarget(mazemap):

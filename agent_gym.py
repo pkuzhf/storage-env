@@ -11,6 +11,24 @@ class AGENT_GYM(gym.Env):
 
     metadata = {'render.modes': ['human']}
 
+
+    def initAgent(self, hole_pos, source_pos, agent_num):
+        agent_pos = []
+        agent_city = []
+        agent_reward = []
+        for i in range(agent_num):
+            while True:
+                x = np.random.random_integers(0, config.Map.Height-1)
+                y = np.random.random_integers(0, config.Map.Width-1)
+                if [x,y] not in hole_pos and [x,y] not in source_pos and [x,y] not in agent_pos:
+                    agent_pos.append([x,y])
+                    agent_city.append(-1)
+                    agent_reward.append(0)
+                    break
+        self.agent_pos = agent_pos
+        self.agent_city = agent_city
+        self.agent_reward = agent_reward
+
     def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city):
 
         # t = ()
@@ -40,23 +58,9 @@ class AGENT_GYM(gym.Env):
         self.total_time = total_time
         self.hole_pos = hole_pos
         self.hole_city = hole_city
+        self.agent_num = agent_num
         self.time = 0
-        [self.agent_pos, self.agent_city, self.agent_reward] = initAgent(self.hole_pos, self.source_pos, self.agent_num)
-
-    def initAgent(hole_pos, source_pos, agent_num):
-        agent_pos = []
-        agent_city = []
-        agent_reward = []
-        for i in range(agent_num):
-            while True:
-                x = np.random.random_integers(0, config.Map.Height-1)
-                y = np.random.random_integers(0, config.Map.Width-1)
-                if [x,y] not in hole_pos and [x,y] not in source_pos and [x,y] not in agent_pos:
-                    agent_pos.append([x,y])
-                    agent_city.append(-1)
-                    agent_reward.append(0)
-                    break
-        return [agent_pos, agent_city, agent_reward]
+        self.initAgent(self.hole_pos, self.source_pos, self.agent_num)
 
 
     def _seed(self, seed=None):
@@ -65,7 +69,7 @@ class AGENT_GYM(gym.Env):
 
     def _reset(self):
         self.time = 0
-        [self.agent_pos, self.agent_city, self.agent_reward] = initAgent(self.hole_pos, self.source_pos, self.agent_num)
+        self.initAgent(self.hole_pos, self.source_pos, self.agent_num)
         return [self.agent_pos, self.agent_city, self.agent_reward]
 
     def _step(self, action):
@@ -77,7 +81,7 @@ class AGENT_GYM(gym.Env):
             [pos_x, pos_y] = self.agent_pos[i]
             [a_x, a_y] = action[i]
             pos = [pos_x + a_x, pos_y + a_y]
-            if utils.inMap(pos_x, pos_y):
+            if utils.inMap(pos):
                 if len(np.nonzero(self.source_pos == pos)[0]) > 0: # source
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
@@ -100,6 +104,6 @@ class AGENT_GYM(gym.Env):
             done = False
 
 
-        
+
         return [self.agent_pos, self.agent_city, self.agent_reward], reward, done, {}
 
