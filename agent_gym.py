@@ -88,19 +88,23 @@ class AGENT_GYM(gym.Env):
             pos = [pos_x + a_x, pos_y + a_y]
             if utils.inMap(pos):
                 if len(np.where(self.source_pos == pos)[0]) > 0: # source
+                    print([i, 'source'])
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
                         self.agent_city[i] = genCity(self.city_dis)
                 elif len(np.where(self.hole_pos == pos)[0]) > 0: # hole
-                    hole_idx = np.nonzero(self.source_pos == pos)[0][0] 
-                    hole_city = self.hole_city[hole_idx]
-                    if self.agent_city[i] == hole_city:
+                    hole_idx = np.where(self.hole_pos == pos)[0][0]
+                    print([i, 'hole'])
+                    print(self.agent_city[i], self.hole_city[hole_idx])
+                    if self.agent_city[i] == self.hole_city[hole_idx]:
                         self.agent_pos[i] = pos
                         self.agent_city[i] = -1
                         self.agent_reward[i] += 1
                         reward += 1
                 elif len(np.where(self.agent_pos == pos)[0]) == 0: # path (not agent)
                     self.agent_pos[i] = pos
+                else:
+                    print([i, 'agent'])
 
         self.time += 1
         if self.time  == self.total_time:
