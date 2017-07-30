@@ -4,7 +4,7 @@ from agent_gym import AGENT_GYM
 
 
 source_pos = [[0,0]]
-hole_pos[[4,4],[0,4],[4,0]]
+hole_pos= [[4,4],[0,4],[4,0]]
 agent_num = 3
 total_time = 100
 hole_city = [0,1,2]
