@@ -31,16 +31,21 @@ for i_episode in range(1):
 
         # TODO: print picture according to source_pos, hole_pos, agent_pos, agent_city, hole_city
 
-        draw.draw_map([config.Map.Width,config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city, color, "show",t)
+        # so many params...
+        draw.draw_map([config.Map.Width,config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
+                      color, "show", t, agent_reward, hole_reward, source_reward, city_dis)
 
-        print "///"
-        print source_pos
-        print hole_pos
-        print hole_city
-        print agent_pos
-        print agent_city
-        print "///"
+        # print "///"
+        # print source_pos
+        # print hole_pos
+        # print hole_city
+        # print agent_pos
+        # print agent_city
+        # print agent_reward
+        # print "/"
 
         if done:
             print("Episode finished after {} timesteps".format(t+1))
             break
+
+draw.save_video("show", total_time)
