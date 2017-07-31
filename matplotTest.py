@@ -32,26 +32,34 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
     ax = plt.subplot2grid((3, 4), (0, 0), colspan=3, rowspan=3)
     ax.grid(True, color="black", alpha=0.25, linestyle='-')
 
+    ax1 = plt.subplot2grid((3, 4), (0, 3))
+    ax1.text(0, 0.8, "map size: " + str(mapsize), size=12, weight="light")
+    ax1.text(0, 0.6, "hole num: " + str(len(hole_pos)), size=12, weight="light")
+    ax1.text(0, 0.4, "source num: " + str(len(conveyors)), size=12, weight="light")
+    ax1.text(0, 0.2, "agent num: " + str(len(agent_pos)), size=12, weight="light")
+    ax1.text(0, 0, "city distribution: ", size=12, weight="light")
+
     # pie graph
     ax2 = plt.subplot2grid((3, 4), (1, 3))
     ax2.pie(city_dis, colors=colors, radius=1.25, autopct='%1.1f%%')
 
     # timestep graph
     ax3 = plt.subplot2grid((3, 4), (2, 3))
-    ax3.text(0,0.5,"Timestep: "+str(step), size=14, weight="light")
+    ax3.text(0, 0.7,"Timestep: "+str(step), size=12, weight="light")
+    ax3.text(0, 0.5, "Package num: " + str(sum(source_reward)), size=12, weight="light")
+    ax3.text(0, 0.3, "Total Reward: " + str(sum(agent_reward)), size=12, weight="light")
 
     for k in range(len(conveyors)):
-        p = patches.Wedge(
-            ((conveyors[k][0]), (conveyors[k][1])),
-            1,
-            0,
-            60,
-            width=1,
+        p=patches.Polygon(
+            [[conveyors[k][0],conveyors[k][1]],
+             [conveyors[k][0]+1, conveyors[k][1]],
+             [conveyors[k][0]+0.5, conveyors[k][1]+1]
+             ],
             facecolor=(1,1,1),
             linewidth=0.5,
             linestyle='-'
-            )
-        ax.text(conveyors[k][0]+0.1, conveyors[k][1]+0.05, str(source_reward[k]), size=fontsize, weight="light")
+        )
+        ax.text(conveyors[k][0]+0.35, conveyors[k][1]+0.35, str(source_reward[k]), size=fontsize, weight="light")
         ax.add_patch(p)
 
     for i in range(len(hole_pos)):
@@ -63,7 +71,7 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
             linewidth=0.5,
             linestyle='-'
         )
-        ax.text(hole_pos[i][0]+0.05, hole_pos[i][1]+0.05, str(hole_reward[i]), size=fontsize, weight="light", color=(1,1,1))
+        ax.text(hole_pos[i][0]+0.35, hole_pos[i][1]+0.35, str(hole_reward[i]), size=fontsize, weight="light", color=(1,1,1))
         ax.add_patch(p)
 
     for j in range(len(agent_pos)):
@@ -74,7 +82,7 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
             linewidth=0.5,
             linestyle='-'
         )
-        ax.text(agent_pos[j][0]+0.05, agent_pos[j][1]+0.7, str(agent_reward[j]), size=fontsize, weight="light", alpha=0.85)
+        ax.text(agent_pos[j][0]+0.35, agent_pos[j][1]+0.35, str(agent_reward[j]), size=fontsize, weight="light", alpha=0.85)
         ax.add_patch(p)
 
     # set ticks and spines
@@ -82,6 +90,13 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
     ax.set_xticklabels(())
     ax.set_yticks(np.arange(0, mapsize[1]+1, 1))
     ax.set_yticklabels(())
+
+    ax1.spines['bottom'].set_color('none')
+    ax1.spines['top'].set_color('none')
+    ax1.spines['right'].set_color('none')
+    ax1.spines['left'].set_color('none')
+    ax1.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off',
+                    labelleft='off')
 
     ax2.spines['bottom'].set_color('none')
     ax2.spines['top'].set_color('none')
