@@ -70,6 +70,24 @@ def generateMap(w,h):
         return bigMap(w,h)
 
 
+# still have some problem
+def randomCity(cityNum, holeNum):
+    hole_city=[]
+    for i in range(holeNum):
+        hole_city.append(np.random.randint(0,cityNum))
+
+    city_dis=[]
+    for j in range(cityNum):
+        city_dis.append(np.random.random())
+    dis_sum = sum(city_dis)
+    for j in range(cityNum):
+        city_dis[j]/=dis_sum
+
+    return hole_city, city_dis
+
+
+
+
 def show_map(mapsize, conveyors, hole_pos):
     # only for test
     fig = plt.figure()
@@ -111,6 +129,8 @@ def show_map(mapsize, conveyors, hole_pos):
 
 
 # if __name__ == "__main__":
-    # edge=9
+    # edge=10
+    # a,b=bigMap(edge,edge)
+    # randomCity(4,6)
     # a,b=generateMap(edge,edge)
     # show_map((edge,edge),a,b)

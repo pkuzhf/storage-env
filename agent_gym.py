@@ -62,13 +62,13 @@ class AGENT_GYM(gym.Env):
         self.agent_num = agent_num
         self.city_dis = city_dis
 
-        print source_pos
-        print self.source_pos
-        print self.source_pos.index([0,0])
-
-        print hole_pos
-        print self.hole_pos
-        print self.hole_pos.index([4,0])
+        # print source_pos
+        # print self.source_pos
+        # print self.source_pos.index([0,0])
+        #
+        # print hole_pos
+        # print self.hole_pos
+        # print self.hole_pos.index([4,0])
 
         self.init(self.hole_pos, self.source_pos, self.agent_num)
 

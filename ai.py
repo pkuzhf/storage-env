@@ -3,19 +3,26 @@ import numpy as np
 from agent_gym import AGENT_GYM
 import config, utils
 import matplotTest as draw
-
-source_pos = [[0,0]]
-hole_pos= [[4,4],[0,4],[4,0]]
+import mapGenerator as MG
+# source_pos = [[0,0]]
+# hole_pos= [[4,4],[0,4],[4,0]]
 agent_num = 3
 total_time = 200
-hole_city = [0,1,2]
-city_dis = [0.33, 0.33, 0.34]
+# hole_city = [0,1,2]
+# city_dis = [0.33, 0.33, 0.34]
+
+
+# there are some problems in randomcity()
+# so hole_city and city_dis are inited by hand
+source_pos, hole_pos = MG.bigMap(10,10)
+hole_city = [0,1,2,2,1,3]
+color = draw.randomcolor(4)
+color[4] = [1, 1, 1]
+city_dis = [0.12,0.33,0.37,0.18]
 
 env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis)
 env.seed(config.Game.Seed)
 
-color = draw.randomcolor(3)
-color[3] = [1, 1, 1]
 
 for i_episode in range(1):
     observation = env.reset()
@@ -32,17 +39,8 @@ for i_episode in range(1):
         # TODO: print picture according to source_pos, hole_pos, agent_pos, agent_city, hole_city
 
         # so many params...
-        draw.draw_map([config.Map.Width,config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
+        draw.draw_map([10,10], source_pos, hole_pos, hole_city, agent_pos, agent_city,
                       color, "show", t, agent_reward, hole_reward, source_reward, city_dis)
-
-        # print "///"
-        # print source_pos
-        # print hole_pos
-        # print hole_city
-        # print agent_pos
-        # print agent_city
-        # print agent_reward
-        # print "/"
 
         if done:
             print("Episode finished after {} timesteps".format(t+1))
