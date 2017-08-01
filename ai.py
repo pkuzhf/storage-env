@@ -172,7 +172,7 @@ for i_episode in range(1):
         print ['agent_pos', agent_pos]
 
         # so many params...
-        draw.draw_map([10,10], source_pos, hole_pos, hole_city, agent_pos, agent_city,
+        draw.draw_map([config.Map.Width,config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
                       color, "show", time, agent_reward, hole_reward, source_reward, city_dis)
 
         if done:
@@ -180,3 +180,4 @@ for i_episode in range(1):
             break
 
 draw.save_video("show", total_time)
+draw.save_video2("show", total_time)
