@@ -26,49 +26,12 @@ class Cell:
 
     Value = [np.array([1, 0, 0, 0]), np.array([0, 1, 0, 0]), np.array([0, 0, 1, 0]), np.array([0, 0, 0, 1])]
 
-def calcHole(map):
-    n_hole = 0
-    for i in range(config.Map.Height):
-        for j in range(config.Map.Width):
-            if map[i, j, Cell.Hole] == 1:
-                n_hole += 1
-    return n_hole
-
 def inMap(pos):
     [x, y] = pos
     return x >= 0 and x < config.Map.Height and y >= 0 and y < config.Map.Width
 
-def findSourceAndTarget(mazemap):
-    sx, sy, tx, ty = -1, -1, -1, -1
-    for i in range(config.Map.Height):
-        for j in range(config.Map.Width):
-            if mazemap[i, j, Cell.Source] == 1:
-                sx = i
-                sy = j
-            if mazemap[i, j, Cell.Target] == 1:
-                tx = i
-                ty = j
-    return sx, sy, tx, ty
-
-def initMazeMap():
-    mazemap = np.zeros([config.Map.Height, config.Map.Width, Cell.CellSize], dtype=np.int64)
-    for i in range(config.Map.Height):
-        for j in range(config.Map.Width):
-            mazemap[i, j, Cell.Empty] = 1
-    mazemap[0, 0] = Cell.SourceV
-    mazemap[config.Map.Height-1, config.Map.Width-1] = Cell.TargetV
-    return mazemap
-
-def displayMap(mazemap):
-    output = ''
-    for i in range(config.Map.Height):
-        for j in range(config.Map.Width):
-            cell = mazemap[i, j]
-            for k in range(Cell.CellSize):
-                if cell[k]:
-                    output += map_symbols[k]
-        output += '\n'
-    print output,
+def getDistance(start_pos, end_pos):
+    return abs(start_pos[0] - end_pos[0]) + abs(start_pos[1] - end_pos[1])
 
 def displayQvalue(qvalues):
     if len(qvalues)==config.Map.Height*config.Map.Width+1:
