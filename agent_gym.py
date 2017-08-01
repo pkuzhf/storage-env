@@ -32,27 +32,6 @@ class AGENT_GYM(gym.Env):
 
     def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis):
 
-        # t = ()
-        # for i in range(agent_num):
-        #     t += (spaces.Discrete(config.Game.AgentAction),)
-        # self.action_space = spaces.Tuple(t)
-
-        # t = ()
-        # for i in range(config.Map.Height * config.Map.Width):
-        #     t += (spaces.Discrete(utils.Cell.CellSize),)
-        
-        # n_hole = utils.calcHole(ini_map)
-
-        # for i in range(n_hole):
-        #     t += (spaces.Discrete(city_num),)
-
-        # for i in range(agent_num):
-        #     t += (spaces.Discrete(config.Map.Height),)
-        #     t += (spaces.Discrete(config.Map.Width),)
-        #     t += (spaces.Discrete(city_num+1),)
-
-        # self.observation_space = spaces.Tuple(t)
-
         self._seed()
 
         self.source_pos = source_pos
@@ -62,14 +41,6 @@ class AGENT_GYM(gym.Env):
         self.agent_num = agent_num
         self.city_dis = city_dis
 
-        # print source_pos
-        # print self.source_pos
-        # print self.source_pos.index([0,0])
-        #
-        # print hole_pos
-        # print self.hole_pos
-        # print self.hole_pos.index([4,0])
-
         self.init(self.hole_pos, self.source_pos, self.agent_num)
 
     def _seed(self, seed=None):
@@ -78,7 +49,7 @@ class AGENT_GYM(gym.Env):
 
     def _reset(self):
         self.init(self.hole_pos, self.source_pos, self.agent_num)
-        return [self.agent_pos, self.agent_city, self.agent_reward]
+        return [self.agent_pos, self.agent_city, self.agent_reward, self.hole_reward, self.source_reward]
 
     def _step(self, action):
 
