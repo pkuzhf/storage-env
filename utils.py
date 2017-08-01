@@ -6,7 +6,7 @@ import tensorflow as tf
 from collections import deque
 
 # right, down, up, left
-dirs = np.array([[0, 1], [1, 0], [-1, 0], [0, -1]])
+dirs = [[0, 1], [1, 0], [-1, 0], [0, -1]]
 dir_symbols = ['>', 'v', '^', '<']
 #map_symbols = ['0', '1', '2', '3']
 map_symbols = ['.', '#', 'S', 'T']

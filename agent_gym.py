@@ -56,35 +56,41 @@ class AGENT_GYM(gym.Env):
         reward = 0
 
         for i in range(self.agent_num):
-            [pos_x, pos_y] = self.agent_pos[i]
-            [a_x, a_y] = action[i]
-            pos = [pos_x + a_x, pos_y + a_y]
-            print pos
+            pos = self.agent_pos[i]
+            a = action[i]
+            if a == [0, 0]:
+                continue
+            pos = [pos[0] + a[0], pos[1] + a[1]]
+            print(['agent ', i, ' try to move to ', pos])
             if utils.inMap(pos):
                 if pos in self.agent_pos:
-                    print([i, 'agent collision'])
+                    print('agent collision')
                 elif pos in self.source_pos: # source
                     source_idx = self.source_pos.index(pos)
-                    print([i, 'source collision'])
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
                         self.agent_city[i] = self.genCity(self.city_dis)
                         self.source_reward[source_idx] += 1
+                        print('enter source')
+                    else:
+                        print('source collision')
                 elif pos in self.hole_pos: # hole
                     hole_idx = self.hole_pos.index(pos)
-                    print([i, 'hole collision'])
-                    print(self.agent_city[i], self.hole_city[hole_idx])
                     if self.agent_city[i] == self.hole_city[hole_idx]:
                         self.agent_pos[i] = pos
                         self.agent_city[i] = -1
                         self.agent_reward[i] += 1
                         self.hole_reward[hole_idx] += 1
                         reward += 1
+                        print('enter hole')
+                    else:
+                        print('hole collision')
                 else:
-                    print([i, 'update position from ', self.agent_pos[i], ' to ', pos])
+                    print('move from ' + str(self.agent_pos[i]) + ' to ' + str(pos))
                     self.agent_pos[i] = pos
             else:
-                print 'outMap'
+                print('out of map')
+
         self.time += 1
         if self.time  == self.total_time:
             done = True
