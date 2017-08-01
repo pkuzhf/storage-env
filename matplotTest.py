@@ -9,6 +9,7 @@ import sys
 import time
 import os
 import cv2
+import imageio
 
 
 def read_map(filepath, idx):
@@ -133,6 +134,12 @@ def save_video(filename, step):
     videoWriter.release()
 
 
+def save_video2(filename,step):
+    with imageio.get_writer('mapOutput/'+filename+'.gif',mode='I',fps=5) as writer:
+        for i in range(step):
+            image = imageio.imread('mapOutput/'+filename+str(i)+'.png')
+            writer.append_data(image)
+
 
 test_mapsize = [50, 31]
 test_conveyors = [[0, 8], [0, 16], [49, 30]]
@@ -156,5 +163,7 @@ if __name__ == "__main__":
     #             robot[1]-=1
     #     draw_map(test_mapsize, test_conveyors, test_holes, test_robots, colors, "test", step)
     # main()
-    # save_video("show", 200)
+    # save_video2("show", 50)
+    # imageio.help()
     pass
+
