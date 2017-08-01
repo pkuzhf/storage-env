@@ -4,7 +4,6 @@ from agent_gym import AGENT_GYM
 import config, utils
 import matplotTest as draw
 import mapGenerator as MG
-from sets import Set
 
 # source_pos = [[0,0]]
 # hole_pos= [[4,4],[0,4],[4,0]]
@@ -127,7 +126,7 @@ for i_episode in range(1):
     observation = env.reset()
     print observation
     [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
-    reserve = Set()
+    reserve = {}
     schedule = [[]] * agent_num
     for time in range(total_time):
         print ['time', time]
@@ -150,19 +149,19 @@ for i_episode in range(1):
             if len(schedule[i]) == 0:
                 schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
                 for [pos, t, a] in schedule[i]:
-                    reserve.add(encode(pos, t))
+                    reserve[encode(pos, t)] = True
             else:
                 [pos, t, a] = schedule[i][0]
                 if pos != agent_pos[i]:
                     for [pos, t, a] in schedule[i]:
-                        reserve.remove(encode(pos, t))
+                        del reserve[encode(pos, t)]
                     schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
                     for [pos, t, a] in schedule[i]:
-                        reserve.add(encode(pos, t))
+                        reserve[encode(pos, t)] = True
             print ['schedule', schedule[i]]
             [pos, t, a] = schedule[i][0]
             del schedule[i][0]
-            reserve.remove(encode(pos, t))
+            del reserve[encode(pos, t)]
             action.append(a)
 
 
