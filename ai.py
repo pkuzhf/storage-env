@@ -228,6 +228,6 @@ for agent_num in range(1, 50):
         if done:
             #print("Episode finished after {} timesteps".format(time+1))
             break
-    print 'reward: ' + str(sum(agent_reward))
+    print str(agent_num) + '\t' + str(sum(agent_reward))
 #draw.save_video("show", total_time)
 #draw.save_video2("show", total_time)
