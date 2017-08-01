@@ -56,24 +56,23 @@ class AGENT_GYM(gym.Env):
         reward = 0
 
         for i in range(self.agent_num):
-            r = 0
             [pos_x, pos_y] = self.agent_pos[i]
             [a_x, a_y] = action[i]
             pos = [pos_x + a_x, pos_y + a_y]
+            print pos
             if utils.inMap(pos):
                 if pos in self.agent_pos:
-                    print([i, 'agent'])
-                    continue
-                if pos in self.source_pos: # source
+                    print([i, 'agent collision'])
+                elif pos in self.source_pos: # source
                     source_idx = self.source_pos.index(pos)
-                    print([i, 'source'])
+                    print([i, 'source collision'])
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
                         self.agent_city[i] = self.genCity(self.city_dis)
                         self.source_reward[source_idx] += 1
                 elif pos in self.hole_pos: # hole
                     hole_idx = self.hole_pos.index(pos)
-                    print([i, 'hole'])
+                    print([i, 'hole collision'])
                     print(self.agent_city[i], self.hole_city[hole_idx])
                     if self.agent_city[i] == self.hole_city[hole_idx]:
                         self.agent_pos[i] = pos
@@ -82,8 +81,10 @@ class AGENT_GYM(gym.Env):
                         self.hole_reward[hole_idx] += 1
                         reward += 1
                 else:
+                    print([i, 'update position from ', self.agent_pos[i], ' to ', pos])
                     self.agent_pos[i] = pos
-
+            else:
+                print 'outMap'
         self.time += 1
         if self.time  == self.total_time:
             done = True

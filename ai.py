@@ -16,7 +16,7 @@ total_time = 200
 
 # there are some problems in randomcity()
 # so hole_city and city_dis are inited by hand
-source_pos, hole_pos = MG.bigMap(10,10)
+source_pos, hole_pos = MG.bigMap(config.Map.Height, config.Map.Width)
 hole_city = [0,1,2,2,1,3]
 color = draw.randomcolor(4)
 color[4] = [1, 1, 1]
@@ -92,8 +92,10 @@ def AStar(start_pos, end_pos, agent_pos, reserve, t0):
                 schedule.insert(0, path[encode(pos, t)])
                 [pos, t, a] = path[encode(pos, t)]
             break
-    print [start_pos, end_pos]
-    print schedule
+    print 'AStar'
+    print ['start_pos', start_pos, 'end_pos', end_pos]
+    print ['schedule', schedule]
+    print 'End AStar'
     return schedule
 
 def pathfinding(reserve, agent_pos, agent_city, agent_id, t):
@@ -114,8 +116,10 @@ def pathfinding(reserve, agent_pos, agent_city, agent_id, t):
             if min_distance == -1 or distance < min_distance:
                 min_distance = distance
                 end_pos = hole_pos[i]
+    print 'pathfinding'
     print ['city', city]
     schedule = AStar(start_pos, end_pos, agent_pos, reserve, t)
+    print 'end pathfinding'
     return schedule
 
 
@@ -126,6 +130,7 @@ for i_episode in range(1):
     reserve = Set()
     schedule = [[]] * agent_num
     for time in range(total_time):
+        print ['time', time]
         env.render()
 
         # random action
@@ -144,7 +149,7 @@ for i_episode in range(1):
             print ['agent', i]
             if len(schedule[i]) == 0:
                 schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
-            for [pos, t, a] in schedule[i]:
+                for [pos, t, a] in schedule[i]:
                     reserve.add(encode(pos, t))
             else:
                 [pos, t, a] = schedule[i][0]
@@ -154,16 +159,17 @@ for i_episode in range(1):
                     schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
                     for [pos, t, a] in schedule[i]:
                         reserve.add(encode(pos, t))
+            print ['schedule', schedule[i]]
             [pos, t, a] = schedule[i][0]
-            schedule[i] = schedule[i][1:]
+            del schedule[i][0]
             reserve.remove(encode(pos, t))
             action.append(a)
 
 
-        print action
+        print ['action', action]
         observation, reward, done, info = env.step(action)
         [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
-
+        print ['agent_pos', agent_pos]
 
         # so many params...
         draw.draw_map([10,10], source_pos, hole_pos, hole_city, agent_pos, agent_city,
