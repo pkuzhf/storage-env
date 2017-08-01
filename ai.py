@@ -159,7 +159,7 @@ for agent_num in range(1, 50):
     env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis)
     env.seed(config.Game.Seed)
 
-    print 'agent_num: ' + str(agent_num)
+    #print 'agent_num: ' + str(agent_num)
     observation = env.reset()
     #print observation
     [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
