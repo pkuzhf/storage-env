@@ -4,7 +4,6 @@ from agent_gym import AGENT_GYM
 import config, utils
 import matplotTest as draw
 import mapGenerator as MG
-import pathfinding as PF
 from sets import Set
 
 # source_pos = [[0,0]]
@@ -32,8 +31,15 @@ def encode(pos, t):
     [x, y] = pos
     return str(x) + ' ' + str(y) + ' ' + str(t)
 
-def isValidPath(pos, t, agent_pos, reserve):
-    return pos not in agent_pos and pos not in source_pos and pos not in hole_pos and encode(pos, t) not in reserve
+def isValidPath(pos, t, reserve, agent_pos, end_pos):
+    if encode(pos, t) in reserve or pos in agent_pos:
+        return False
+    elif pos == end_pos:
+        return True
+    elif pos in source_pos or pos in hole_pos:
+        return False
+    else:
+        return True
 
 def AStar(start_pos, end_pos, agent_pos, reserve, t0):
     open_set = []
@@ -61,12 +67,15 @@ def AStar(start_pos, end_pos, agent_pos, reserve, t0):
         close_set.append([pos, t])
 
         dirs = utils.dirs + [0, 0]
-        for a in range(len(dirs)):
+        for i in range(len(dirs)):
+            a = dirs[i]
             [x, y] = pos
-            x += dirs[a][0]
-            y += dirs[a][1]
+            x += a[0]
+            y += a[1]
             new_pos = [x, y]
-            if not isValidPath(new_pos, t + 1, agent_pos, reserve) or [new_pos, t + 1] in close_set:
+            if new_pos != end_pos and not isValidPath(new_pos, t + 1, reserve, agent_pos, end_pos):
+                continue
+            if [new_pos, t + 1] in close_set:
                 continue
             new_g = g[encode(pos, t)] + utils.getDistance(new_pos, pos)
             if [new_pos, t + 1] not in open_set:
@@ -78,12 +87,13 @@ def AStar(start_pos, end_pos, agent_pos, reserve, t0):
                 g[encode(new_pos, t + 1)] = new_g
                 path[encode(new_pos, t + 1)] = [pos, t, a]
 
-        if g[encode(pos, t)] == window or len(open_set) == 0:
+        if pos == end_pos or g[encode(pos, t)] == window or len(open_set) == 0:
             while (path[encode(pos, t)] != [[-1, -1], -1, -1]):
                 schedule.insert(0, path[encode(pos, t)])
                 [pos, t, a] = path[encode(pos, t)]
             break
-    
+    print [start_pos, end_pos]
+    print schedule
     return schedule
 
 def pathfinding(reserve, agent_pos, agent_city, agent_id, t):
@@ -103,7 +113,8 @@ def pathfinding(reserve, agent_pos, agent_city, agent_id, t):
             distance = utils.getDistance(hole_pos[i], start_pos)
             if min_distance == -1 or distance < min_distance:
                 min_distance = distance
-                end_pos = source_pos[i]   
+                end_pos = hole_pos[i]
+    print ['city', city]
     schedule = AStar(start_pos, end_pos, agent_pos, reserve, t)
     return schedule
 
@@ -114,7 +125,7 @@ for i_episode in range(1):
     [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
     reserve = Set()
     schedule = [[]] * agent_num
-    for t in range(total_time):
+    for time in range(total_time):
         env.render()
 
         # random action
@@ -130,14 +141,17 @@ for i_episode in range(1):
 
         action = []
         for i in range(agent_num):
+            print ['agent', i]
             if len(schedule[i]) == 0:
-                schedule[i] = pathfinding(agent_pos, agent_city, i, t)
+                schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
+            for [pos, t, a] in schedule[i]:
+                    reserve.add(encode(pos, t))
             else:
                 [pos, t, a] = schedule[i][0]
                 if pos != agent_pos[i]:
                     for [pos, t, a] in schedule[i]:
                         reserve.remove(encode(pos, t))
-                    schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, t)
+                    schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
                     for [pos, t, a] in schedule[i]:
                         reserve.add(encode(pos, t))
             [pos, t, a] = schedule[i][0]
@@ -153,10 +167,10 @@ for i_episode in range(1):
 
         # so many params...
         draw.draw_map([10,10], source_pos, hole_pos, hole_city, agent_pos, agent_city,
-                      color, "show", t, agent_reward, hole_reward, source_reward, city_dis)
+                      color, "show", time, agent_reward, hole_reward, source_reward, city_dis)
 
         if done:
-            print("Episode finished after {} timesteps".format(t+1))
+            print("Episode finished after {} timesteps".format(time+1))
             break
 
 draw.save_video("show", total_time)

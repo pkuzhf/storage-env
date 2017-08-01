@@ -61,6 +61,9 @@ class AGENT_GYM(gym.Env):
             [a_x, a_y] = action[i]
             pos = [pos_x + a_x, pos_y + a_y]
             if utils.inMap(pos):
+                if pos in self.agent_pos:
+                    print([i, 'agent'])
+                    continue
                 if pos in self.source_pos: # source
                     source_idx = self.source_pos.index(pos)
                     print([i, 'source'])
@@ -78,10 +81,8 @@ class AGENT_GYM(gym.Env):
                         self.agent_reward[i] += 1
                         self.hole_reward[hole_idx] += 1
                         reward += 1
-                elif pos not in self.agent_pos: # path (not agent)
-                    self.agent_pos[i] = pos
                 else:
-                    print([i, 'agent'])
+                    self.agent_pos[i] = pos
 
         self.time += 1
         if self.time  == self.total_time:
