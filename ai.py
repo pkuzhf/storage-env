@@ -7,8 +7,8 @@ import mapGenerator as MG
 
 # source_pos = [[0,0]]
 # hole_pos= [[4,4],[0,4],[4,0]]
-agent_num = 20
-total_time = 2000
+#agent_num = 20
+total_time = 1000
 # hole_city = [0,1,2]
 # city_dis = [0.33, 0.33, 0.34]
 
@@ -21,9 +21,6 @@ color = draw.randomcolor(4)
 color[4] = [1, 1, 1]
 city_dis = [0.12,0.33,0.37,0.18]
 
-env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis)
-env.seed(config.Game.Seed)
-
 window = 10
 
 def encode(pos, t):
@@ -32,21 +29,21 @@ def encode(pos, t):
 
 def isValidPath(agent_id, pos, t, reserve, agent_pos, end_pos):
     if not utils.inMap(pos):
-        print 'not valid: out of map'
+        #print 'not valid: out of map'
         return False
     elif encode(pos, t) in reserve and reserve[encode(pos, t)] != agent_id:
-        print 'not valid: reserved by ' + str(reserve[encode(pos, t)])
+        #print 'not valid: reserved by ' + str(reserve[encode(pos, t)])
         return False
     elif encode(pos, t + 1) in reserve and reserve[encode(pos, t + 1)] != agent_id:
-        print 'not valid: reserved by ' + str(reserve[encode(pos, t + 1)])
+        #print 'not valid: reserved by ' + str(reserve[encode(pos, t + 1)])
         return False
     elif pos in agent_pos and agent_pos.index(pos) != agent_id:
-        print 'not valid: agent ' + str(agent_pos.index(pos))
+        #print 'not valid: agent ' + str(agent_pos.index(pos))
         return False
     elif pos == end_pos:
         return True
     elif pos in source_pos or pos in hole_pos:
-        print 'not valid: source or hole'
+        #print 'not valid: source or hole'
         return False
     else:
         return True
@@ -76,11 +73,12 @@ def AStar(agent_id, start_pos, end_pos, agent_pos, reserve, t0):
         open_set.pop(idx)
         close_set.append([pos, t])
 
-        dirs = utils.dirs + [[0, 0]]
+        #dirs = utils.dirs + [[0, 0]]
+        dirs = utils.dirs
         for i in range(len(dirs)):
             a = dirs[i]
             new_pos = [pos[0] + a[0], pos[1] + a[1]]
-            print new_pos
+            #print new_pos
             if not isValidPath(agent_id, new_pos, t + 1, reserve, agent_pos, end_pos):
                 continue
             if [new_pos, t + 1] in close_set:
@@ -101,8 +99,8 @@ def AStar(agent_id, start_pos, end_pos, agent_pos, reserve, t0):
                 [pos, t, a] = path[encode(pos, t)]
             break
     if len(schedule) == 0:
-        print 'fail to schedule, stay'
-        print path
+        #print 'fail to schedule, stay'
+        #print path
         schedule.append([start_pos, t, [0, 0]])
     [pos, t, a] = schedule[-1]
     new_pos = [pos[0] + a[0], pos[1] + a[1]]
@@ -138,7 +136,7 @@ def pathfinding(reserve, agent_pos, agent_city, agent_id, t):
     return schedule
 
 def removeSchedule(agent_id, reserve, schedule):
-    print 'remove schedule ' + str(agent_id)
+    #print 'remove schedule ' + str(agent_id)
     delset = {}
     for [pos, t, a] in schedule[agent_id]:
         delset[encode(pos, t)] = True
@@ -150,20 +148,25 @@ def removeSchedule(agent_id, reserve, schedule):
 def addReserve(entry, agent_id, reserve, schedule):
     if entry in reserve:
         i = reserve[entry]
-        print 'entry collision ' + str(entry) + ' new ' + str(agent_id) + ' old ' + str(i)
+        #print 'entry collision ' + str(entry) + ' new ' + str(agent_id) + ' old ' + str(i)
         if agent_id != i:
             removeSchedule(i, reserve, schedule)
     reserve[entry] = agent_id
 
 
-for i_episode in range(1):
+for agent_num in range(1, 50):
+
+    env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis)
+    env.seed(config.Game.Seed)
+
+    print 'agent_num: ' + str(agent_num)
     observation = env.reset()
     #print observation
     [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
     reserve = {}
     schedule = [[]] * agent_num
     for time in range(total_time):
-        print ['*** time ***', time]
+        #print ['*** time ***', time]
         env.render()
 
         # random action
@@ -179,7 +182,7 @@ for i_episode in range(1):
 
         action = []
         for i in range(agent_num):
-            print 'agent ' + str(i) + ' in pos ' + str(agent_pos[i])
+            #print 'agent ' + str(i) + ' in pos ' + str(agent_pos[i])
             if len(schedule[i]) == 0:
                 schedule[i] = pathfinding(reserve, agent_pos, agent_city, i, time)
                 for [pos, t, a] in schedule[i]:
@@ -199,7 +202,7 @@ for i_episode in range(1):
                     for [pos, t, a] in schedule[i]:
                         addReserve(encode(pos, t), i, reserve, schedule)
                         addReserve(encode(pos, t + 1), i, reserve, schedule)
-            print ['schedule', schedule[i]]
+            #print ['schedule', schedule[i]]
             [pos, t, a] = schedule[i][0]
             del schedule[i][0]
             del reserve[encode(pos, t)]
@@ -208,22 +211,23 @@ for i_episode in range(1):
             action.append(a)
 
 
-        print ['action', action]
+        #print ['action', action]
         observation, reward, done, info = env.step(action)
         [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
-        print ['agent_pos', agent_pos]
+        #print ['agent_pos', agent_pos]
 
         for i in range(agent_num):
             addReserve(encode(agent_pos[i], time + 1), i, reserve, schedule)
             addReserve(encode(agent_pos[i], time + 2), i, reserve, schedule)
+
 
         # so many params...
         #draw.draw_map([config.Map.Width,config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
         #              color, "show", time, agent_reward, hole_reward, source_reward, city_dis)
 
         if done:
-            print("Episode finished after {} timesteps".format(time+1))
+            #print("Episode finished after {} timesteps".format(time+1))
             break
-
-draw.save_video("show", total_time)
-draw.save_video2("show", total_time)
+    print 'reward: ' + str(sum(agent_reward))
+#draw.save_video("show", total_time)
+#draw.save_video2("show", total_time)

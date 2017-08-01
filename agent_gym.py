@@ -61,19 +61,20 @@ class AGENT_GYM(gym.Env):
             if a == [0, 0]:
                 continue
             pos = [pos[0] + a[0], pos[1] + a[1]]
-            print(['agent ', i, ' try to move to ', pos])
+            #print(['agent ', i, ' try to move to ', pos])
             if utils.inMap(pos):
                 if pos in self.agent_pos:
-                    print('agent collision')
+                    #print('agent collision')
+                    continue
                 elif pos in self.source_pos: # source
                     source_idx = self.source_pos.index(pos)
                     if self.agent_city[i] == -1:
                         self.agent_pos[i] = pos
                         self.agent_city[i] = self.genCity(self.city_dis)
                         self.source_reward[source_idx] += 1
-                        print('enter source')
-                    else:
-                        print('source collision')
+                        #print('enter source')
+                    #else:
+                        #print('source collision')
                 elif pos in self.hole_pos: # hole
                     hole_idx = self.hole_pos.index(pos)
                     if self.agent_city[i] == self.hole_city[hole_idx]:
@@ -82,14 +83,14 @@ class AGENT_GYM(gym.Env):
                         self.agent_reward[i] += 1
                         self.hole_reward[hole_idx] += 1
                         reward += 1
-                        print('enter hole')
-                    else:
-                        print('hole collision')
+                        #print('enter hole')
+                    #else:
+                        #print('hole collision')
                 else:
-                    print('move from ' + str(self.agent_pos[i]) + ' to ' + str(pos))
+                    #print('move from ' + str(self.agent_pos[i]) + ' to ' + str(pos))
                     self.agent_pos[i] = pos
-            else:
-                print('out of map')
+            #else:
+                #print('out of map')
 
         self.time += 1
         if self.time  == self.total_time:
