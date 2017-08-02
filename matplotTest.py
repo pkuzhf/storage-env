@@ -23,7 +23,7 @@ def randomcolor(count):
 
 
 def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, colors,
-             filename, step, agent_reward, hole_reward, source_reward, city_dis):
+             dir, filename, step, agent_reward, hole_reward, source_reward, city_dis):
     fig = plt.figure()
 
     # fontsize for texts
@@ -46,7 +46,7 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
 
     # timestep graph
     ax3 = plt.subplot2grid((3, 4), (2, 3))
-    ax3.text(0, 0.7,"Timestep: "+str(step), size=12, weight="light")
+    ax3.text(0, 0.7,"Timestep: "+str(step/2), size=12, weight="light")
     ax3.text(0, 0.5, "Package num: " + str(sum(source_reward)), size=12, weight="light")
     ax3.text(0, 0.3, "Total Reward: " + str(sum(agent_reward)), size=12, weight="light")
 
@@ -56,11 +56,12 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
              [conveyors[k][0]+1, conveyors[k][1]],
              [conveyors[k][0]+0.5, conveyors[k][1]+1]
              ],
-            facecolor=(1,1,1),
+            facecolor=(0.9,0.9,0.9),
             linewidth=0.5,
             linestyle='-'
         )
-        ax.text(conveyors[k][0]+0.35, conveyors[k][1]+0.35, str(source_reward[k]), size=fontsize, weight="light")
+        ax.text(conveyors[k][0]+0.35, conveyors[k][1]+0.35, str(source_reward[k]),
+                size=fontsize, weight="light")
         ax.add_patch(p)
 
     for i in range(len(hole_pos)):
@@ -72,7 +73,8 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
             linewidth=0.5,
             linestyle='-'
         )
-        ax.text(hole_pos[i][0]+0.35, hole_pos[i][1]+0.35, str(hole_reward[i]), size=fontsize, weight="light", color=(1,1,1))
+        ax.text(hole_pos[i][0]+0.35, hole_pos[i][1]+0.35, str(hole_reward[i]),
+                size=fontsize, weight="light", color=(1,1,1))
         ax.add_patch(p)
 
     for j in range(len(agent_pos)):
@@ -83,7 +85,8 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
             linewidth=0.5,
             linestyle='-'
         )
-        ax.text(agent_pos[j][0]+0.35, agent_pos[j][1]+0.35, str(agent_reward[j]), size=fontsize, weight="light", alpha=0.85)
+        ax.text(agent_pos[j][0]+0.35, agent_pos[j][1]+0.35, str(agent_reward[j]),
+                size=fontsize, weight="light", alpha=0.85)
         ax.add_patch(p)
 
     # set ticks and spines
@@ -96,48 +99,55 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
     ax1.spines['top'].set_color('none')
     ax1.spines['right'].set_color('none')
     ax1.spines['left'].set_color('none')
-    ax1.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off',
-                    labelleft='off')
+    ax1.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off',
+                    right='off', left='off', labelleft='off')
 
     ax2.spines['bottom'].set_color('none')
     ax2.spines['top'].set_color('none')
     ax2.spines['right'].set_color('none')
     ax2.spines['left'].set_color('none')
-    ax2.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off',
-                    labelleft='off')
+    ax2.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off',
+                    right='off', left='off', labelleft='off')
 
     ax3.spines['bottom'].set_color('none')
     ax3.spines['top'].set_color('none')
     ax3.spines['right'].set_color('none')
     ax3.spines['left'].set_color('none')
-    ax3.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off',
-                    labelleft='off')
+    ax3.tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off',
+                    right='off', left='off', labelleft='off')
 
     # plt.show()
 
-    if not os.path.exists('mapOutput'):
-        os.mkdir("mapOutput")
-    fig.savefig('mapOutput/' + filename + str(step) + '.png', dpi=100, bbox_inches='tight')
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+    fig.savefig(dir + '/' + filename + str(step) + '.png', dpi=100, bbox_inches='tight')
 
 
-def save_video(filename, step):
-    frame = cv2.imread('mapOutput/' + filename + '0' + '.png')
+def save_video(dir, filename, step):
+    frame = cv2.imread(dir + '/' + filename + '0' + '.png')
     x = frame.shape[0]
     y = frame.shape[1]
 
     fourcc = cv2.cv.CV_FOURCC('X', 'V', 'I', 'D')
-    videoWriter = cv2.VideoWriter('mapOutput/' + filename + '.avi', fourcc, 5, (y, x))
+    videoWriter = cv2.VideoWriter(dir + '/' + filename + '.avi', fourcc, 10, (y, x))
 
     for i in range(step):
-        frame = cv2.imread('mapOutput/' + filename + str(i) + '.png')
+        frame = cv2.imread(dir+'/' + filename + str(i) + '.png')
         videoWriter.write(frame)
     videoWriter.release()
 
 
-def save_video2(filename,step):
-    with imageio.get_writer('mapOutput/'+filename+'.gif',mode='I',fps=5) as writer:
+def save_video2(dir,filename,step):
+    with imageio.get_writer(dir+'/'+filename+'.gif',mode='I',fps=10) as writer:
         for i in range(step):
-            image = imageio.imread('mapOutput/'+filename+str(i)+'.png')
+            image = imageio.imread(dir+'/'+filename+str(i)+'.png')
+            writer.append_data(image)
+
+
+def save_video3(dir,filename,step):
+    with imageio.get_writer(dir+'/'+filename+'.mp4',mode='I',fps=10) as writer:
+        for i in range(step):
+            image = imageio.imread(dir+'/'+filename+str(i)+'.png')
             writer.append_data(image)
 
 

@@ -4,10 +4,12 @@ from agent_gym import AGENT_GYM
 import config, utils
 import matplotTest as draw
 import mapGenerator as MG
+import copy
+
 
 # source_pos = [[0,0]]
 # hole_pos= [[4,4],[0,4],[4,0]]
-#agent_num = 20
+# agent_num = 20
 total_time = 1000
 # hole_city = [0,1,2]
 # city_dis = [0.33, 0.33, 0.34]
@@ -18,7 +20,7 @@ total_time = 1000
 source_pos, hole_pos = MG.bigMap(config.Map.Height, config.Map.Width)
 hole_city = [0,1,2,2,1,3]
 color = draw.randomcolor(4)
-color[4] = [1, 1, 1]
+color[4] = [0.9, 0.9, 0.9]
 city_dis = [0.12,0.33,0.37,0.18]
 
 window = 10
@@ -163,6 +165,10 @@ for agent_num in range(1, 50):
     observation = env.reset()
     #print observation
     [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
+
+    agent_city_old = copy.deepcopy(agent_city)
+    agent_pos_old = copy.deepcopy(agent_pos)
+
     reserve = {}
     schedule = [[]] * agent_num
     for time in range(total_time):
@@ -220,14 +226,31 @@ for agent_num in range(1, 50):
             addReserve(encode(agent_pos[i], time + 1), i, reserve, schedule)
             addReserve(encode(agent_pos[i], time + 2), i, reserve, schedule)
 
+        '''
+        if True:
+            # make pics
+            for i in range(len(agent_pos)):
+                agent_pos_old[i][0] = (agent_pos[i][0] + agent_pos_old[i][0]) / 2.0
+                agent_pos_old[i][1] = (agent_pos[i][1] + agent_pos_old[i][1]) / 2.0
 
-        # so many params...
-        #draw.draw_map([config.Map.Width,config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
-        #              color, "show", time, agent_reward, hole_reward, source_reward, city_dis)
+                # so many params...
+            if not time == 0:
+                draw.draw_map([config.Map.Width, config.Map.Height], source_pos, hole_pos, hole_city, agent_pos_old,
+                              agent_city_old,color,"mapOutput", "show", 2 * time - 1, agent_reward, hole_reward, source_reward, city_dis)
+
+            draw.draw_map([config.Map.Width, config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
+                          color, "mapOutput", "show", 2 * time, agent_reward, hole_reward, source_reward, city_dis)
+
+            for i in range(len(agent_pos)):
+                agent_city_old[i] = agent_city[i]
+                agent_pos_old[i][0] = agent_pos[i][0]
+                agent_pos_old[i][1] = agent_pos[i][1]
+        '''
 
         if done:
             #print("Episode finished after {} timesteps".format(time+1))
             break
     print str(agent_num) + '\t' + str(sum(agent_reward))
-#draw.save_video("show", total_time)
-#draw.save_video2("show", total_time)
+# draw.save_video("mapOutput", "show", total_time) # avi with cv
+# draw.save_video2("mapOutput", "show", total_time) # gif with imageio
+# draw.save_video3("mapOutput", "show", total_time) # mp4 with imageio
