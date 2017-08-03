@@ -121,7 +121,8 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
     if not os.path.exists(dir):
         os.mkdir(dir)
     fig.savefig(dir + '/' + filename + str(step) + '.png', dpi=100, bbox_inches='tight')
-
+    plt.close(fig)
+    
 
 def save_video(dir, filename, step):
     frame = cv2.imread(dir + '/' + filename + '0' + '.png')
