@@ -22,28 +22,7 @@ source_pos, hole_pos = MG.bigMap(config.Map.Height, config.Map.Width)
 hole_city = [0,1,2,2,1,3]
 color = draw.randomcolor(4)
 color[4] = [0.9, 0.9, 0.9]
-city_dis = [0.12,0.33,0.37,0.18]
-
-window = 10
-
-def encode(pos, t):
-    [x, y] = pos
-    return str(x) + ' ' + str(y) + ' ' + str(t)
-
-def isValidPath(agent_id, pos, t, reserve, agent_pos, end_pos):
-    if not utils.inMap(pos):
-        #print 'not valid: out of map'
-        return False
-    elif encode(pos, t) in reserve and reserve[encode(pos, t)] != agent_id:
-        #print 'not valid: reserved by ' + str(reserve[encode(pos, t)])
-        return False
-    elif encode(pos, t + 1) in reserve and reserve[encode(pos, t + 1)] != agent_id:
-        #print 'not valid: reserved by ' + str(reserve[encode(pos, t + 1)])
-        return False
-    elif pos in agent_pos and agent_pos.index(pos) != agent_id:
-        #print 'not valid: agent ' + str(agent_pos.index(pos))
-        return False
-    elif pos == end_pos:
+city_dis = [0.12,0.33,0.37,0.
         return True
     elif pos in source_pos or pos in hole_pos:
         #print 'not valid: source or hole'
@@ -70,31 +49,6 @@ def AStar(agent_id, start_pos, end_pos, agent_pos, reserve, t0):
             [pos, t] = open_set[i]
             f = g[encode(pos, t)] + h[encode(pos, t)]
             if min_f == -1 or f < min_f:
-                min_f = f
-                idx = i
-        [pos, t] = open_set[idx]
-        open_set.pop(idx)
-        close_set.append([pos, t])
-
-        # dirs = utils.dirs + [[0, 0]]
-        dirs = utils.dirs
-        for i in range(len(dirs)):
-            a = dirs[i]
-            new_pos = [pos[0] + a[0], pos[1] + a[1]]
-            #print new_pos
-            if not isValidPath(agent_id, new_pos, t + 1, reserve, agent_pos, end_pos):
-                continue
-            if [new_pos, t + 1] in close_set:
-                continue
-            new_g = g[encode(pos, t)] + 1
-            if [new_pos, t + 1] not in open_set:
-                open_set.append([new_pos, t + 1])
-                g[encode(new_pos, t + 1)] = new_g
-                h[encode(new_pos, t + 1)] = utils.getDistance(new_pos, end_pos)
-                path[encode(new_pos, t + 1)] = [pos, t, a]
-            elif new_g < g[encode(new_pos, t + 1)]:
-                g[encode(new_pos, t + 1)] = new_g
-                path[encode(new_pos, t + 1)] = [pos, t, a]
 
         if pos == end_pos or g[encode(pos, t)] == window or len(open_set) == 0:
             while (path[encode(pos, t)] != [[-1, -1], -1, -1]):
@@ -238,7 +192,28 @@ for agent_num in range(1, 50):
             for i in range(agent_num):
                 addReserve(encode(agent_pos[i], time + 1), i, reserve, schedule)
                 addReserve(encode(agent_pos[i], time + 2), i, reserve, schedule)
+            
+            '''
+            if True:
+            # make pics
+                for i in range(len(agent_pos)):
+                    agent_pos_old[i][0] = (agent_pos[i][0] + agent_pos_old[i][0]) / 2.0
+                    agent_pos_old[i][1] = (agent_pos[i][1] + agent_pos_old[i][1]) / 2.0
 
+                    # so many params...
+                if not time == 0:
+                    draw.draw_map([config.Map.Width, config.Map.Height], source_pos, hole_pos, hole_city, agent_pos_old,
+                                  agent_city_old,color,"mapOutput", "show", 2 * time - 1, agent_reward, hole_reward, source_reward, city_dis)
+
+                draw.draw_map([config.Map.Width, config.Map.Height], source_pos, hole_pos, hole_city, agent_pos, agent_city,
+                              color, "mapOutput", "show", 2 * time, agent_reward, hole_reward, source_reward, city_dis)
+
+                for i in range(len(agent_pos)):
+                    agent_city_old[i] = agent_city[i]
+                    agent_pos_old[i][0] = agent_pos[i][0]
+                    agent_pos_old[i][1] = agent_pos[i][1]
+            '''
+            
             # save dynamic info
             for i in range(len(agent_pos)):
                 agent_pos_old[i][0] = (agent_pos[i][0] + agent_pos_old[i][0]) / 2.0
