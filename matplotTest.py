@@ -42,54 +42,8 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
     ax3 = plt.subplot2grid((3, 4), (2, 3))
     ax3.text(0, 0.7,"Timestep: "+str(step/2), size=12, weight="light")
     ax3.text(0, 0.5, "Pack num: " + str(sum(source_reward)), size=12, weight="light")
-    ax3.text(0, 0.3, "Reward: " + str(sum(agent_reward)), size=12, weight="light")
+    ax3.text(0, 0.bottom'].set_color('none')
 
-    for k in range(len(conveyors)):
-        p=patches.Polygon(
-            [[conveyors[k][0],conveyors[k][1]],
-             [conveyors[k][0]+1, conveyors[k][1]],
-             [conveyors[k][0]+0.5, conveyors[k][1]+1]
-             ],
-            facecolor=(0.9,0.9,0.9),
-            linewidth=0.5,
-            linestyle='-'
-        )
-        ax.text(conveyors[k][0]+0.35, conveyors[k][1]+0.35, str(source_reward[k]),
-                size=fontsize, weight="light")
-        ax.add_patch(p)
-
-    for i in range(len(hole_pos)):
-        p = patches.Rectangle(
-            ((hole_pos[i][0]), (hole_pos[i][1])),
-            1,
-            1,
-            facecolor=(colors[hole_city[i]][0], colors[hole_city[i]][1], colors[hole_city[i]][2]),
-            linewidth=0.5,
-            linestyle='-'
-        )
-        ax.text(hole_pos[i][0]+0.35, hole_pos[i][1]+0.35, str(hole_reward[i]),
-                size=fontsize, weight="light", color=(1,1,1))
-        ax.add_patch(p)
-
-    for j in range(len(agent_pos)):
-        p = patches.Circle(
-            ((agent_pos[j][0]+0.5), (agent_pos[j][1]+0.5)),
-            0.4,
-            facecolor=(colors[agent_city[j]][0], colors[agent_city[j]][1], colors[agent_city[j]][2]),
-            linewidth=0.5,
-            linestyle='-'
-        )
-        ax.text(agent_pos[j][0]+0.35, agent_pos[j][1]+0.35, str(agent_reward[j]),
-                size=fontsize, weight="light", alpha=0.85)
-        ax.add_patch(p)
-
-    # set ticks and spines
-    ax.set_xticks(np.arange(0, mapsize[0]+1, 1))
-    ax.set_xticklabels(())
-    ax.set_yticks(np.arange(0, mapsize[1]+1, 1))
-    ax.set_yticklabels(())
-
-    ax1.spines['bottom'].set_color('none')
     ax1.spines['top'].set_color('none')
     ax1.spines['right'].set_color('none')
     ax1.spines['left'].set_color('none')
