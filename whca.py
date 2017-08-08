@@ -64,7 +64,7 @@ class WHCA:
                 a = dirs[i]
                 new_pos = [pos[0] + a[0], pos[1] + a[1]]
                 #print new_pos
-                if not isValidPath(agent_id, new_pos, t + 1, agent_pos, end_pos):
+                if not self.isValidPath(agent_id, new_pos, t + 1, agent_pos, end_pos):
                     continue
                 if [new_pos, t + 1] in close_set:
                     continue
@@ -90,10 +90,10 @@ class WHCA:
         [pos, t, a] = schedule[-1]
         new_pos = [pos[0] + a[0], pos[1] + a[1]]
         schedule.append([new_pos, t + 1, [0, 0]])
-        #print 'AStar'
+        #print 'self.AStar'
         #print ['start_pos', start_pos, 'end_pos', end_pos]
         #print ['schedule', schedule]
-        #print 'End AStar'
+        #print 'End self.AStar'
         return schedule
 
     def pathfinding(self, agent_pos, agent_city, agent_id, t):
@@ -114,10 +114,10 @@ class WHCA:
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = hole_pos[i]
-        #print 'pathfinding'
+        #print 'self.pathfinding'
         #print ['city', city]
-        schedule = AStar(agent_id, start_pos, end_pos, agent_pos, t)
-        #print 'end pathfinding'
+        schedule = self.AStar(agent_id, start_pos, end_pos, agent_pos, t)
+        #print 'end self.pathfinding'
         return schedule
 
     def removeSchedule(self, agent_id):
@@ -135,7 +135,7 @@ class WHCA:
             i = self.reserve[entry]
             #print 'entry collision ' + str(entry) + ' new ' + str(agent_id) + ' old ' + str(i)
             if agent_id != i:
-                removeSchedule(i)
+                self.removeSchedule(i)
         self.reserve[entry] = agent_id
 
     def __init__(self, window, source_pos, hole_pos, agent_num):
@@ -150,31 +150,31 @@ class WHCA:
     def getJointAction(self, agent_pos):
 
         for i in range(self.agent_num):
-            addReserve(encode(agent_pos[i], time + 1), i)
-            addReserve(encode(agent_pos[i], time + 2), i)
+            self.addReserve(encode(agent_pos[i], time + 1), i)
+            self.addReserve(encode(agent_pos[i], time + 2), i)
 
         action = []
         for i in range(self.agent_num):
             #print 'agent ' + str(i) + ' in pos ' + str(agent_pos[i])
             if len(self.schedule[i]) == 0:
-                self.schedule[i] = pathfinding(agent_pos, agent_city, i, time)
+                self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, time)
                 for [pos, t, a] in self.schedule[i]:
-                    addReserve(encode(pos, t), i)
-                    addReserve(encode(pos, t + 1), i)
+                    self.addReserve(encode(pos, t), i)
+                    self.addReserve(encode(pos, t + 1), i)
             elif len(self.schedule[i]) == 1:
-                removeSchedule(i)
-                self.schedule[i] = pathfinding(agent_pos, agent_city, i, time)
+                self.removeSchedule(i)
+                self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, time)
                 for [pos, t, a] in self.schedule[i]:
-                    addReserve(encode(pos, t), i)
-                    addReserve(encode(pos, t + 1), i)
+                    self.addReserve(encode(pos, t), i)
+                    self.addReserve(encode(pos, t + 1), i)
             else:
                 [pos, t, a] = self.schedule[i][0]
                 if pos != agent_pos[i]:
-                    removeSchedule(i)
-                    self.schedule[i] = pathfinding(agent_pos, agent_city, i, time)
+                    self.removeSchedule(i)
+                    self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, time)
                     for [pos, t, a] in self.schedule[i]:
-                        addReserve(encode(pos, t), i)
-                        addReserve(encode(pos, t + 1), i)
+                        self.addReserve(encode(pos, t), i)
+                        self.addReserve(encode(pos, t + 1), i)
             #print ['schedule', self.schedule[i]]
             [pos, t, a] = self.schedule[i][0]
             del self.schedule[i][0]
