@@ -37,7 +37,7 @@ for agent_num in range(1, 50):
     [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
 
 
-    whca = WHCA(window, source_pos, hole_pos, agent_num)
+    whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num)
 
     agent_city_old = copy.deepcopy(agent_city)
     agent_pos_old = copy.deepcopy(agent_pos)

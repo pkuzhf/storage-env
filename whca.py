@@ -108,7 +108,7 @@ class WHCA:
                     end_pos = self.source_pos[i]
         else:
             for i in range(len(self.hole_pos)):
-                if hole_city[i] != city:
+                if self.hole_city[i] != city:
                     continue
                 distance = utils.getDistance(self.hole_pos[i], start_pos)
                 if min_distance == -1 or distance < min_distance:
@@ -138,10 +138,11 @@ class WHCA:
                 self.removeSchedule(i)
         self.reserve[entry] = agent_id
 
-    def __init__(self, window, source_pos, hole_pos, agent_num):
+    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num):
         self.window = window
         self.source_pos = source_pos
         self.hole_pos = hole_pos
+        self.hole_city = hole_city
         self.agent_num = agent_num
         self.reserve = {}
         self.schedule = [[]] * agent_num
