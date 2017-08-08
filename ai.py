@@ -42,8 +42,6 @@ for agent_num in range(1, 50):
     agent_city_old = copy.deepcopy(agent_city)
     agent_pos_old = copy.deepcopy(agent_pos)
 
-    reserve = {}
-    schedule = [[]] * agent_num
     for time in range(total_time):
         #print ['*** time ***', time]
         env.render()

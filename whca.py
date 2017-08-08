@@ -147,7 +147,7 @@ class WHCA:
 
     def getJointAction(self, agent_pos):
 
-        for i in range(agent_num):
+        for i in range(self.agent_num):
             addReserve(encode(agent_pos[i], time + 1), i)
             addReserve(encode(agent_pos[i], time + 2), i)
 
@@ -176,17 +176,12 @@ class WHCA:
             #print ['schedule', self.schedule[i]]
             [pos, t, a] = self.schedule[i][0]
             del self.schedule[i][0]
-            del reserve[encode(pos, t)]
+            del self.reserve[encode(pos, t)]
             if a != [0, 0]:
-                del reserve[encode(pos, t + 1)]
+                del self.reserve[encode(pos, t + 1)]
             action.append(a)
 
         return action
-
-        #print ['action', action]
-        observation, reward, done, info = env.step(action)
-        [agent_pos, agent_city, agent_reward, hole_reward, source_reward] = observation
-        #print ['agent_pos', agent_pos]
 
 
 
