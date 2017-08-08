@@ -147,7 +147,7 @@ class WHCA:
         self.schedule = [[]] * agent_num
 
 
-    def getJointAction(self, agent_pos, time):
+    def getJointAction(self, agent_pos, agent_city, time):
 
         for i in range(self.agent_num):
             self.addReserve(encode(agent_pos[i], time + 1), i)
