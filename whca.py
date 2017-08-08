@@ -27,7 +27,7 @@ class WHCA:
             return False
         elif pos == end_pos:
             return True
-        elif pos in source_pos or pos in hole_pos:
+        elif pos in self.source_pos or pos in hole_pos:
             #print 'not valid: source or hole'
             return False
         else:
