@@ -142,8 +142,10 @@ class WHCA:
         self.window = window
         self.source_pos = source_pos
         self.hole_pos = hole_pos
+        self.agent_num = agent_num
         self.reserve = {}
         self.schedule = [[]] * agent_num
+
 
     def getJointAction(self, agent_pos):
 
