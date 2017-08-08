@@ -8,13 +8,7 @@ import numpy as np
 import sys
 import time
 import os
-#import cv2
 import imageio
-
-
-def read_map(filepath, idx):
-    # TODO read map info
-    return
 
 
 def randomcolor(count):
@@ -47,55 +41,9 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
     # timestep graph
     ax3 = plt.subplot2grid((3, 4), (2, 3))
     ax3.text(0, 0.7,"Timestep: "+str(step/2), size=12, weight="light")
-    ax3.text(0, 0.5, "Package num: " + str(sum(source_reward)), size=12, weight="light")
-    ax3.text(0, 0.3, "Total Reward: " + str(sum(agent_reward)), size=12, weight="light")
+    ax3.text(0, 0.5, "Pack num: " + str(sum(source_reward)), size=12, weight="light")
+    ax3.text(0, 0.bottom'].set_color('none')
 
-    for k in range(len(conveyors)):
-        p=patches.Polygon(
-            [[conveyors[k][0],conveyors[k][1]],
-             [conveyors[k][0]+1, conveyors[k][1]],
-             [conveyors[k][0]+0.5, conveyors[k][1]+1]
-             ],
-            facecolor=(0.9,0.9,0.9),
-            linewidth=0.5,
-            linestyle='-'
-        )
-        ax.text(conveyors[k][0]+0.35, conveyors[k][1]+0.35, str(source_reward[k]),
-                size=fontsize, weight="light")
-        ax.add_patch(p)
-
-    for i in range(len(hole_pos)):
-        p = patches.Rectangle(
-            ((hole_pos[i][0]), (hole_pos[i][1])),
-            1,
-            1,
-            facecolor=(colors[hole_city[i]][0], colors[hole_city[i]][1], colors[hole_city[i]][2]),
-            linewidth=0.5,
-            linestyle='-'
-        )
-        ax.text(hole_pos[i][0]+0.35, hole_pos[i][1]+0.35, str(hole_reward[i]),
-                size=fontsize, weight="light", color=(1,1,1))
-        ax.add_patch(p)
-
-    for j in range(len(agent_pos)):
-        p = patches.Circle(
-            ((agent_pos[j][0]+0.5), (agent_pos[j][1]+0.5)),
-            0.5,
-            facecolor=(colors[agent_city[j]][0], colors[agent_city[j]][1], colors[agent_city[j]][2]),
-            linewidth=0.5,
-            linestyle='-'
-        )
-        ax.text(agent_pos[j][0]+0.35, agent_pos[j][1]+0.35, str(agent_reward[j]),
-                size=fontsize, weight="light", alpha=0.85)
-        ax.add_patch(p)
-
-    # set ticks and spines
-    ax.set_xticks(np.arange(0, mapsize[0]+1, 1))
-    ax.set_xticklabels(())
-    ax.set_yticks(np.arange(0, mapsize[1]+1, 1))
-    ax.set_yticklabels(())
-
-    ax1.spines['bottom'].set_color('none')
     ax1.spines['top'].set_color('none')
     ax1.spines['right'].set_color('none')
     ax1.spines['left'].set_color('none')
@@ -122,20 +70,6 @@ def draw_map(mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, col
         os.mkdir(dir)
     fig.savefig(dir + '/' + filename + str(step) + '.png', dpi=100, bbox_inches='tight')
     plt.close(fig)
-    
-
-def save_video(dir, filename, step):
-    frame = cv2.imread(dir + '/' + filename + '0' + '.png')
-    x = frame.shape[0]
-    y = frame.shape[1]
-
-    fourcc = cv2.cv.CV_FOURCC('X', 'V', 'I', 'D')
-    videoWriter = cv2.VideoWriter(dir + '/' + filename + '.avi', fourcc, 10, (y, x))
-
-    for i in range(step):
-        frame = cv2.imread(dir+'/' + filename + str(i) + '.png')
-        videoWriter.write(frame)
-    videoWriter.release()
 
 
 def save_video2(dir,filename,step):
@@ -151,6 +85,69 @@ def save_video3(dir,filename,step):
             image = imageio.imread(dir+'/'+filename+str(i)+'.png')
             writer.append_data(image)
 
+
+def read_result():
+    file = open('result/result', 'r')
+    result = file.readlines()
+
+    fig = plt.figure()
+
+    x = range(1,50)
+    y = [0]*49
+
+    for point in result:
+        point = point.split()
+        plt.scatter(int(point[0]), int(point[1]),alpha=0.25,color=(0.2,0.2,1))
+        y[int(point[0])-1] += int(point[1])/20.0
+    # print point
+    plt.plot(x,y,color='r',linewidth=1.5)
+
+    plt.xlim(0,50)
+    plt.ylim(0,1000)
+    plt.xticks(np.arange(0, 50, 2))
+    plt.yticks(np.arange(0, 1000, 50))
+    plt.grid(True, color="black", alpha=0.25, linestyle='-')
+    # plt.show()
+    plt.savefig('result/' + 'average.png', dpi=120, bbox_inches='tight')
+    plt.close()
+
+
+def draw_log(dir, picdir, filename):
+    log = open(dir)
+    mapsize = eval(log.readline())
+    city_dis = eval(log.readline())
+    source_pos = eval(log.readline())
+    hole_pos = eval(log.readline())
+    hole_city = eval(log.readline())
+    colors = randomcolor(len(city_dis))
+    colors[len(city_dis)] = [0.9, 0.9, 0.9]
+
+    step = 0
+    agent_reward = eval(log.readline())
+    source_reward = eval(log.readline())
+    hole_reward = eval(log.readline())
+    agent_pos = eval(log.readline())
+    agent_city = eval(log.readline())
+    draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
+             picdir, filename, step, agent_reward, hole_reward, source_reward, city_dis)
+    line = log.readline()
+    while line!='end':
+        step+=1
+        agent_pos = eval(line)
+        agent_city = eval(log.readline())
+        agent_reward = eval(log.readline())
+        source_reward = eval(log.readline())
+        hole_reward = eval(log.readline())
+        draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
+                 picdir, filename, step, agent_reward, hole_reward, source_reward, city_dis)
+        step+=1
+        agent_pos = eval(log.readline())
+        agent_city = eval(log.readline())
+        draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
+                 picdir, filename, step, agent_reward, hole_reward, source_reward, city_dis)
+        line = log.readline()
+
+    save_video3('logtest', "demo", step+1)
 
 test_mapsize = [50, 31]
 test_conveyors = [[0, 8], [0, 16], [49, 30]]
@@ -176,5 +173,8 @@ if __name__ == "__main__":
     # main()
     # save_video2("show", 50)
     # imageio.help()
+    # read_result()
+    # save_video3('mapOutput_0',"show", 987)
+    # draw_log('result/mapInfo5_0.log', 'logtest', 'demo')
     pass
 
