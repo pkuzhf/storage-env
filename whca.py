@@ -27,7 +27,7 @@ class WHCA:
             return False
         elif pos == end_pos:
             return True
-        elif pos in self.source_pos or pos in hole_pos:
+        elif pos in self.source_pos or pos in self.hole_pos:
             #print 'not valid: source or hole'
             return False
         else:
@@ -78,7 +78,7 @@ class WHCA:
                     g[encode(new_pos, t + 1)] = new_g
                     path[encode(new_pos, t + 1)] = [pos, t, a]
 
-            if pos == end_pos or g[encode(pos, t)] == window or len(open_set) == 0:
+            if pos == end_pos or g[encode(pos, t)] == self.window or len(open_set) == 0:
                 while (path[encode(pos, t)] != [[-1, -1], -1, -1]):
                     schedule.insert(0, path[encode(pos, t)])
                     [pos, t, a] = path[encode(pos, t)]
@@ -101,19 +101,19 @@ class WHCA:
         city = agent_city[agent_id]
         min_distance = -1
         if city == -1:
-            for i in range(len(source_pos)):
-                distance = utils.getDistance(source_pos[i], start_pos)
+            for i in range(len(self.source_pos)):
+                distance = utils.getDistance(self.source_pos[i], start_pos)
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
-                    end_pos = source_pos[i]
+                    end_pos = self.source_pos[i]
         else:
-            for i in range(len(hole_pos)):
+            for i in range(len(self.hole_pos)):
                 if hole_city[i] != city:
                     continue
-                distance = utils.getDistance(hole_pos[i], start_pos)
+                distance = utils.getDistance(self.hole_pos[i], start_pos)
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
-                    end_pos = hole_pos[i]
+                    end_pos = self.hole_pos[i]
         #print 'self.pathfinding'
         #print ['city', city]
         schedule = self.AStar(agent_id, start_pos, end_pos, agent_pos, t)
