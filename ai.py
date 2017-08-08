@@ -57,7 +57,7 @@ for agent_num in range(1, 50):
 
         # whca
 
-        action = whca.getJointAction(agent_pos)
+        action = whca.getJointAction(agent_pos, time)
 
         #print ['action', action]
         observation, reward, done, info = env.step(action)
