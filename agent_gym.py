@@ -53,9 +53,10 @@ class AGENT_GYM(gym.Env):
 
     def _step(self, action):
 
-        reward = 0
+        rewards = []
 
         for i in range(self.agent_num):
+            rewards.append(0)
             pos = self.agent_pos[i]
             a = action[i]
             if a == [0, 0]:
@@ -65,7 +66,7 @@ class AGENT_GYM(gym.Env):
             if utils.inMap(pos):
                 if pos in self.agent_pos:
                     #print('agent collision')
-                    continue
+                    pass
                 elif pos in self.source_pos: # source
                     source_idx = self.source_pos.index(pos)
                     if self.agent_city[i] == -1:
@@ -82,7 +83,7 @@ class AGENT_GYM(gym.Env):
                         self.agent_city[i] = -1
                         self.agent_reward[i] += 1
                         self.hole_reward[hole_idx] += 1
-                        reward += 1
+                        rewards[-1] = 1
                         #print('enter hole')
                     #else:
                         #print('hole collision')
@@ -91,7 +92,6 @@ class AGENT_GYM(gym.Env):
                     self.agent_pos[i] = pos
             #else:
                 #print('out of map')
-
         self.time += 1
         if self.time  == self.total_time:
             done = True
@@ -100,5 +100,5 @@ class AGENT_GYM(gym.Env):
 
 
 
-        return [self.agent_pos, self.agent_city, self.agent_reward, self.hole_reward, self.source_reward], reward, done, {}
+        return [self.agent_pos, self.agent_city, self.agent_reward, self.hole_reward, self.source_reward], rewards, done, {}
 
