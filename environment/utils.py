@@ -28,7 +28,7 @@ class Cell:
 
 def inMap(pos):
     [x, y] = pos
-    return x >= 0 and x < config.Map.Height and y >= 0 and y < config.Map.Width
+    return x >= 0 and x < config.Map.Width and y >= 0 and y < config.Map.Height
 
 def getDistance(start_pos, end_pos):
     return abs(start_pos[0] - end_pos[0]) + abs(start_pos[1] - end_pos[1])

@@ -1,9 +1,7 @@
 import gym
 import numpy as np
-from agent_gym import AGENT_GYM
+# from storage_robot import AGENT_GYM
 import config, utils
-import matplotTest as draw
-import mapGenerator as MG
 import copy
 
 def encode(pos, t):
@@ -185,6 +183,7 @@ class WHCA:
             action.append(a)
 
         return action
+
 
 
 

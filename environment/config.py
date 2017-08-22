@@ -5,8 +5,8 @@ class Game:
     Type = ''
 
 class Map:
-    Height = 10
-    Width = 10
+    Height = 6
+    Width = 6
     WallDense = 0.
 
 class Generator:
