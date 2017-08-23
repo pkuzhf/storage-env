@@ -282,7 +282,8 @@ class DQNAgent(AbstractDQNAgent):
                 state1_batch.append(e.state1[3])
                 reward_batch.append(e.reward)
                 action_batch.append(e.action)
-                terminal1_batch.append(np.zeros((self.agent_num, )) if e.terminal1 else np.ones((self.agent_num, )))
+                # terminal1_batch.append(np.zeros((self.agent_num, )) if e.terminal1 else np.ones((self.agent_num, )))
+                terminal1_batch.append(np.zeros((self.agent_num, )))
 
             # print np.array(experiences[0].state0)
 
