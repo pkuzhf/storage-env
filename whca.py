@@ -10,7 +10,21 @@ def encode(pos, t):
     [x, y] = pos
     return str(x) + ' ' + str(y) + ' ' + str(t)
 
+def decode(m):
+    m = m.split()
+    pos = [int(m[0]), int(m[1])]
+    t = int(m[2])
+    return [pos, t]
+
 class WHCA:
+
+    def getScheduleTable(self, total_time_step):
+        table = [[[0 for t in range(total_time_step)] for y in range(config.Map.Width)] for x in range(config.Map.Height)]
+        for entry in self.reserve:
+            [pos, t] = decode(entry)
+            [x, y] = pos
+            table[x][y][t] = 1
+        return table
 
     def isValidPath(self, agent_id, pos, t, agent_pos, end_pos):
         if not utils.inMap(pos):
@@ -96,24 +110,25 @@ class WHCA:
         #print 'End self.AStar'
         return schedule
 
-    def pathfinding(self, agent_pos, agent_city, agent_id, t):
+    def pathfinding(self, agent_pos, agent_city, agent_id, end_pos, t):
         start_pos = agent_pos[agent_id]
-        city = agent_city[agent_id]
-        min_distance = -1
-        if city == -1:
-            for i in range(len(self.source_pos)):
-                distance = utils.getDistance(self.source_pos[i], start_pos)
-                if min_distance == -1 or distance < min_distance:
-                    min_distance = distance
-                    end_pos = self.source_pos[i]
-        else:
-            for i in range(len(self.hole_pos)):
-                if self.hole_city[i] != city:
-                    continue
-                distance = utils.getDistance(self.hole_pos[i], start_pos)
-                if min_distance == -1 or distance < min_distance:
-                    min_distance = distance
-                    end_pos = self.hole_pos[i]
+        if end_pos == [-1, -1]:
+            city = agent_city[agent_id]
+            min_distance = -1
+            if city == -1:
+                for i in range(len(self.source_pos)):
+                    distance = utils.getDistance(self.source_pos[i], start_pos)
+                    if min_distance == -1 or distance < min_distance:
+                        min_distance = distance
+                        end_pos = self.source_pos[i]
+            else:
+                for i in range(len(self.hole_pos)):
+                    if self.hole_city[i] != city:
+                        continue
+                    distance = utils.getDistance(self.hole_pos[i], start_pos)
+                    if min_distance == -1 or distance < min_distance:
+                        min_distance = distance
+                        end_pos = self.hole_pos[i]
         #print 'self.pathfinding'
         #print ['city', city]
         schedule = self.AStar(agent_id, start_pos, end_pos, agent_pos, t)
@@ -148,7 +163,7 @@ class WHCA:
         self.schedule = [[]] * agent_num
 
 
-    def getJointAction(self, agent_pos, agent_city, time):
+    def getJointAction(self, agent_pos, agent_city, end_poses, time):
 
         for i in range(self.agent_num):
             self.addReserve(encode(agent_pos[i], time + 1), i)
@@ -158,13 +173,13 @@ class WHCA:
         for i in range(self.agent_num):
             #print 'agent ' + str(i) + ' in pos ' + str(agent_pos[i])
             if len(self.schedule[i]) == 0:
-                self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, time)
+                self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, end_poses[i], time)
                 for [pos, t, a] in self.schedule[i]:
                     self.addReserve(encode(pos, t), i)
                     self.addReserve(encode(pos, t + 1), i)
             elif len(self.schedule[i]) == 1:
                 self.removeSchedule(i)
-                self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, time)
+                self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, end_poses[i], time)
                 for [pos, t, a] in self.schedule[i]:
                     self.addReserve(encode(pos, t), i)
                     self.addReserve(encode(pos, t + 1), i)
@@ -172,7 +187,7 @@ class WHCA:
                 [pos, t, a] = self.schedule[i][0]
                 if pos != agent_pos[i]:
                     self.removeSchedule(i)
-                    self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, time)
+                    self.schedule[i] = self.pathfinding(agent_pos, agent_city, i, end_poses[i], time)
                     for [pos, t, a] in self.schedule[i]:
                         self.addReserve(encode(pos, t), i)
                         self.addReserve(encode(pos, t + 1), i)
