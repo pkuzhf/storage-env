@@ -87,7 +87,7 @@ class AGENT_GYM(gym.Env):
                     rewards[i]-=1
                 end_pos.append(self.source_pos[action[i]-5])
             else:
-                if self.agent_city[i]==-1:
+                if self.agent_city[i]!=self.hole_city[action[i]-len(self.source_pos)-5]:
                     rewards[i]-=1
                 end_pos.append(self.hole_pos[action[i]-len(self.source_pos)-5])
 
