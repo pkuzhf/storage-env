@@ -37,12 +37,12 @@ total_time = 1000
 # hole_city = [0,1,2,2,1,3]
 # city_dis = [0.12,0.33,0.37,0.18]
 source_pos = [[0,0]]
-hole_pos = [[2,5],[5,2]]
+hole_pos = [[1,4],[4,1]]
 city_dis = [0.5,0.5]
 hole_city = [0,1]
-agent_num = 2
+agent_num = 4
 window = 5
-nb_action = 4
+nb_action = 5 + len(source_pos) + len(hole_pos)
 w = config.Map.Width
 h = config.Map.Height
 
@@ -59,16 +59,16 @@ print env.reset().shape
 # print(qvalues_space_shape, observation_space_shape)
 
 
-ob_input = Input(shape=(agent_num,w,h,4), name='ob_input')
+ob_input = Input(shape=(agent_num,w,h,8), name='ob_input')
 
 # x = Reshape((agent_num,4*w*h))(ob_input)
 # x = TimeDistributed(Dense(100))(x)
 # x = Activation('tanh')(x)
 # x = TimeDistributed(Dense(16))(ob_input)
-x = TimeDistributed(Conv2D(filters=16, kernel_size=(3, 3), padding='same'))(ob_input)
+x = TimeDistributed(Conv2D(filters=32, kernel_size=(3, 3), padding='same'))(ob_input)
 x = Activation(activation='elu')(x)
 # x = TimeDistributed(Dense(8))(x)
-x = TimeDistributed(Conv2D(filters=32, kernel_size=(3, 3), padding='same'))(x)
+x = TimeDistributed(Conv2D(filters=64, kernel_size=(3, 3), padding='same'))(x)
 x = Activation(activation='elu')(x)
 # x = TimeDistributed(Dense(8))(x)
 x = TimeDistributed(Conv2D(filters=32, kernel_size=(3, 3), padding='same'))(x)
@@ -84,7 +84,7 @@ print(model.summary())
 
 # # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
 # # even the metrics!
-memory = SequentialMemory(limit=20000, window_length=4)
+memory = SequentialMemory(limit=200000, window_length=4)
 # processor = AtariProcessor()
 
 # Select a policy. We use eps-greedy action selection, which means that a random action is selected
@@ -92,7 +92,7 @@ memory = SequentialMemory(limit=20000, window_length=4)
 # the agent initially explores the environment (high eps) and then gradually sticks to what it knows
 # (low eps). We also set a dedicated eps value that is used during testing. Note that we set it to 0.05
 # so that the agent still performs some random actions. This ensures that the agent cannot get stuck.
-policy = EpsGreedyQPolicy(eps=0.5)
+policy = EpsGreedyQPolicy(eps=0.5,end_eps=0.075,steps=250000)
 policy2 = GreedyQPolicy()
 testlogger = [myTestLogger()]
 
@@ -109,7 +109,7 @@ dqn.compile(Adam(lr=.00025), metrics=['mae'])
 
 if args.mode == 'train':
     # nb_step is reduced for test
-    dqn.fit(env, nb_steps=250000, log_interval=10000, verbose=2)
+    dqn.fit(env, nb_steps=300000, log_interval=10000, verbose=2)
 
     # Finally, evaluate our algorithm for 10 episodes.
     # test episodes will be visualized
