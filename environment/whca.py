@@ -31,7 +31,7 @@ class WHCA:
         for entry in self.reserve:
             [pos, t] = decode(entry)
             [x, y] = pos
-            t-=(step-4)
+            t-=(step-1)
             if t>=0 and t<4:
                 table[x][y][t+4] = 1
         return table
