@@ -29,7 +29,7 @@ class AGENT_GYM(gym.Env):
         self.agent_reward = [0] * agent_num
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
-
+        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num)
         # print self.agent_pos
 
 
@@ -47,9 +47,12 @@ class AGENT_GYM(gym.Env):
         self.agent_num = agent_num
         self.city_dis = city_dis
 
+        self.window = window
+
         self.init(self.hole_pos, self.source_pos, self.agent_num)
 
         self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num)
+
         self.steps = 0
         self.visualizer = ResultVisualizer([config.Map.Width, config.Map.Height], source_pos, hole_pos,
                                            hole_city, city_dis, agent_num, "environment/result")
@@ -72,19 +75,29 @@ class AGENT_GYM(gym.Env):
         return self.format_ob()
 
     def _step(self, action):
+        dir = [[1, 0], [0, 1], [-1, 0], [0, -1], [0, 0]]
+        rewards = [-0.01]*self.agent_num
 
-        rewards = [-0.2]*self.agent_num
+        end_pos = []
+        for i in range(self.agent_num):
+            if action[i]<5:
+                end_pos.append([self.agent_pos[i][0]+dir[action[i]][0],self.agent_pos[i][1]+dir[action[i]][1]])
+            elif action[i]<5+len(self.source_pos):
+                if self.agent_city[i]!=-1:
+                    rewards[i]-=1
+                end_pos.append(self.source_pos[action[i]-5])
+            else:
+                if self.agent_city[i]==-1:
+                    rewards[i]-=1
+                end_pos.append(self.hole_pos[action[i]-len(self.source_pos)-5])
 
-        dir = [[1,0], [0,1], [-1,0], [0,-1], [0,0]]
-        astarAction = self.whca.getJointAction(self.agent_pos, self.agent_city, self.steps)
+
+        astarAction = self.whca.getJointAction(self.agent_pos, self.agent_city, end_pos, self.steps % self.total_time)
         self.steps += 1
 
         for i in range(self.agent_num):
             pos = self.agent_pos[i]
-            if action[i]!=5:
-                a = dir[action[i]]
-            else:
-                a = astarAction[i]
+            a = astarAction[i]
 
             if a == [0, 0]:
                 continue
@@ -92,7 +105,7 @@ class AGENT_GYM(gym.Env):
             #print(['agent ', i, ' try to move to ', pos])
             if utils.inMap(pos):
                 if pos in self.agent_pos:
-                    rewards[i] = -1
+                    rewards[i] -= 1
                     #print('agent collision')
                     pass
                 elif pos in self.source_pos: # source
@@ -101,10 +114,10 @@ class AGENT_GYM(gym.Env):
                         self.agent_pos[i] = pos
                         self.agent_city[i] = self.genCity(self.city_dis)
                         self.source_reward[source_idx] += 1
-                        rewards[i] = 10
+                        rewards[i] += 10
                         #print('enter source')
                     else:
-                        rewards[i] = -1
+                        rewards[i] -= 1
                         #print('source collision')
                 elif pos in self.hole_pos: # hole
                     hole_idx = self.hole_pos.index(pos)
@@ -113,19 +126,17 @@ class AGENT_GYM(gym.Env):
                         self.agent_city[i] = -1
                         self.agent_reward[i] += 1
                         self.hole_reward[hole_idx] += 1
-                        rewards[i] = 10
+                        rewards[i] += 10
                         #print('enter hole')
                     else:
-                        rewards[i] = -1
+                        rewards[i] -= 1
                         #print('hole collision')
                 else:
                     #print('move from ' + str(self.agent_pos[i]) + ' to ' + str(pos))
                     self.agent_pos[i] = pos
             else:
-                rewards[i] = -1
+                rewards[i] -= 1
                 # print('out of map')
-            if a==astarAction[i]:
-                rewards[i]+=0.25
 
         self.time += 1
         if self.time == self.total_time:
@@ -141,8 +152,10 @@ class AGENT_GYM(gym.Env):
         # return [self.agent_pos, self.agent_city, self.agent_reward, self.hole_reward, self.source_reward], rewards, done, {}
 
     def format_ob(self):
-        formated_ob = np.zeros((self.agent_num,config.Map.Width,config.Map.Height,4))
+        formated_ob = np.zeros((self.agent_num,config.Map.Width,config.Map.Height,8))
+        table = self.whca.getScheduleTable4(self.steps % self.total_time)
         for i in range(self.agent_num):
+            formated_ob[i] += table
             formated_ob[i][self.agent_pos[i][0]][self.agent_pos[i][1]][0] = 1
             # end
             if (self.agent_city[i]==-1):
