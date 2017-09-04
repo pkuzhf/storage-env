@@ -135,7 +135,7 @@ class WHCA:
             #print 'fail to schedule, stay'
             #print path
             schedule.append([start_pos, [0, 0]])
-        [pos, t, a] = schedule[-1]
+        [pos, a] = schedule[-1]
         new_pos = [pos[0] + a[0], pos[1] + a[1]]
         schedule.append([new_pos, None])
         #print 'self.AStar'
