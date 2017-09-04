@@ -1,4 +1,5 @@
 import matplotlib
+matplotlib.use('Agg')
 import pylab as pl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches

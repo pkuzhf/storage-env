@@ -6,13 +6,15 @@ from rl.policy import Policy
 
 
 class EpsGreedyQPolicy(Policy):
-    def __init__(self, eps=.1):
+    def __init__(self, eps=.1,end_eps=0.1, steps=200000):
         super(EpsGreedyQPolicy, self).__init__()
         self.eps = eps
+        self.end_eps = end_eps
+        self.steps = steps
 
     def select_action(self, q_values):
-        if self.eps > 0.1:
-            self.eps *= 0.999995
+        if self.eps > self.end_eps:
+            self.eps -= (self.eps-self.end_eps)/self.steps
 
         if q_values.ndim == 1:
             nb_actions = q_values.shape[0]
@@ -53,3 +55,11 @@ class GreedyQPolicy(Policy):
                 actions.append(action)
             # print actions
             return actions
+
+
+class AstarPolicy(Policy):
+    def select_action(self, q_values):
+        actions = []
+        for q_value in q_values:
+            actions.append(-1)
+        return actions

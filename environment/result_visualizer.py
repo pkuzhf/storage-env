@@ -1,6 +1,6 @@
 import matplotlib
 
-#matplotlib.use('Agg')
+matplotlib.use('Agg')
 import pylab as pl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -18,23 +18,27 @@ class ResultVisualizer:
         self.hole_pos = hole_pos
         self.hole_city = hole_city
         self.city_dis = city_dis
-        self.color = self.randomcolor(agent_num)
-        self.color[agent_num] = [0.9, 0.9, 0.9]
         self.directory = directory
         self.enable = False
-
-        self.remove_files()
+        if agent_num!=-1:
+            self.remove_files()
 
     def remove_files(self):
         if os.path.exists(self.directory):
-            for file in os.listdir(self.directory + '/observation'):
-                os.remove(self.directory + '/observation/' + file)
-            os.rmdir(self.directory + '/observation')
+            if os.path.exists(self.directory+ '/observation'):
+                for file in os.listdir(self.directory + '/observation'):
+                    os.remove(self.directory + '/observation/' + file)
+                # os.rmdir(self.directory + '/observation')
+            else:
+                os.mkdir(self.directory + '/observation')
             for file in os.listdir(self.directory):
-                os.remove(self.directory + '/' +file)
-            os.rmdir(self.directory)
-        os.mkdir(self.directory)
-        os.mkdir(self.directory + '/observation')
+                try:
+                    os.remove(self.directory + '/' +file)
+                except:
+                    pass
+            # os.rmdir(self.directory)
+        # os.mkdir(self.directory)
+        # os.mkdir(self.directory + '/observation')
 
     def wirte_static_info(self):
         static_info = open(self.directory + '/static_info', 'w')
@@ -75,7 +79,7 @@ class ResultVisualizer:
 
         # main graph
         ax = plt.subplot2grid((3, 4), (0, 0), colspan=3, rowspan=3)
-        ax.grid(True, color="black", alpha=0.25, linestyle='-')
+        ax.grid(True, color="black", alpha=0.25, linestyle='solid')
 
         ax1 = plt.subplot2grid((3, 4), (0, 3))
         ax1.text(0, 0.8, "map size: " + str(mapsize), size=12, weight="light")
@@ -102,7 +106,7 @@ class ResultVisualizer:
                  ],
                 facecolor=(0.9,0.9,0.9),
                 linewidth=0.5,
-                linestyle='-'
+                linestyle='solid'
             )
             ax.text(conveyors[k][0]+0.35, conveyors[k][1]+0.35, str(source_reward[k]),
                     size=fontsize, weight="light")
@@ -115,7 +119,7 @@ class ResultVisualizer:
                 1,
                 facecolor=(colors[hole_city[i]][0], colors[hole_city[i]][1], colors[hole_city[i]][2]),
                 linewidth=0.5,
-                linestyle='-'
+                linestyle='solid'
             )
             ax.text(hole_pos[i][0]+0.35, hole_pos[i][1]+0.35, str(hole_reward[i]),
                     size=fontsize, weight="light", color=(1,1,1))
@@ -127,7 +131,7 @@ class ResultVisualizer:
                 0.4,
                 facecolor=(colors[agent_city[j]][0], colors[agent_city[j]][1], colors[agent_city[j]][2]),
                 linewidth=0.5,
-                linestyle='-'
+                linestyle='solid'
             )
             ax.text(agent_pos[j][0]+0.35, agent_pos[j][1]+0.35, str(agent_reward[j]),
                     size=fontsize, weight="light", alpha=0.85)
@@ -202,7 +206,7 @@ class ResultVisualizer:
             agent_city = eval(log.readline())
             reward = eval(log.readline())
             self.draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
-                     "environment/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis, reward)
+                     self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis, reward)
 
             # old_agent_reward = agent_reward
             # old_source_reward = source_reward
@@ -210,7 +214,7 @@ class ResultVisualizer:
             old_agent_pos = agent_pos
             # old_agent_city = agent_city
 
-            for j in range(99):
+            for j in range(199):
                 step += 1
                 agent_reward = eval(log.readline())
                 source_reward = eval(log.readline())
@@ -222,15 +226,15 @@ class ResultVisualizer:
                     old_agent_pos[i][0] = (agent_pos[i][0] + old_agent_pos[i][0]) / 2.0
                     old_agent_pos[i][1] = (agent_pos[i][1] + old_agent_pos[i][1]) / 2.0
                 self.draw_map(mapsize, source_pos, hole_pos, hole_city, old_agent_pos, agent_city, colors,
-                              "environment/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis, reward)
+                              self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis, reward)
                 step += 1
                 old_agent_pos = agent_pos
                 self.draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
-                              "environment/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis,reward)
+                              self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis,reward)
 
             log.close()
             try:
-                self.save_mp4("environment/pics/"+file, "demo", 199)
+                self.save_mp4(self.directory+"/pics/"+file, "demo", 399)
             except:
                 pass
 
@@ -249,5 +253,18 @@ class ResultVisualizer:
 
         fig = plt.figure()
         plt.plot(range(len(rewards)),rewards)
-        fig.savefig('environment/result/rewards.png', dpi=100, bbox_inches='tight')
+        fig.savefig(self.directory + '/rewards.png', dpi=100, bbox_inches='tight')
         plt.close(fig)
+
+
+if __name__ == '__main__':
+    log = open('result/static_info', 'r')
+    mapsize = eval(log.readline())
+    city_dis = eval(log.readline())
+    source_pos = eval(log.readline())
+    hole_pos = eval(log.readline())
+    hole_city = eval(log.readline())
+    visualizer = ResultVisualizer(mapsize, source_pos, hole_pos,
+                                  hole_city, city_dis, -1, "result")
+    log.close()
+    visualizer.draw_log()
