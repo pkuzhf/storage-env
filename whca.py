@@ -23,23 +23,16 @@ class WHCA:
             self.addReserve(time, start_pos, agent_id)
             self.schedule[agent_id].append([start_pos, action])
 
-    def removeSchedule(self, agent_id, start_time = 0):
+    def removeSchedule(self, agent_id):
         #print 'remove schedule ' + str(agent_id)
-        for time in range(start_time, len(self.schedule[agent_id])):
+        for time in range(len(self.schedule[agent_id])):
             [start_pos, action] = self.schedule[agent_id][time]
             entry = encode(start_pos)
             for i in self.reserve_interval:
                 t = time + i
                 if entry in self.reserve[t]:
                     del self.reserve[t][entry]
-        self.schedule[agent_id] = self.schedule[agent_id][:start_time]
-        if len(self.schedule[agent_id]) <= 1:
-            schedule = []
-            schedule.append([self.agent_pos[agent_id], [0, 0]])
-            schedule.append([self.agent_pos[agent_id], None])
-            self.setSchedule(agent_id, schedule)
-        else:
-            self.schedule[agent_id][-1][1] = None
+        self.schedule[agent_id] = []
 
     def addReserve(self, time, pos, agent_id):
         entry = encode(pos)
@@ -53,7 +46,11 @@ class WHCA:
                 [reserved_agent_id, schedule_time] = self.reserve[t][entry]
                 #print 'entry collision ' + str(entry) + ' new ' + str(agent_id) + ' old ' + str(i)
                 if agent_id != reserved_agent_id:
-                    self.removeSchedule(reserved_agent_id, schedule_time)
+                    self.removeSchedule(reserved_agent_id)
+                    schedule = []
+                    schedule.append([self.agent_pos[reserved_agent_id], [0, 0]])
+                    schedule.append([self.agent_pos[reserved_agent_id], None])
+                    self.setSchedule(reserved_agent_id, schedule)
             self.reserve[t][entry] = [agent_id, time]
 
     def getScheduleTable(self, total_time_step):
@@ -164,7 +161,7 @@ class WHCA:
     
         return end_pos
 
-    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval = [0, 2]):
+    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval = range(0, 2)):
         self.window = window
         self.source_pos = source_pos
         self.hole_pos = hole_pos
@@ -182,7 +179,6 @@ class WHCA:
         for i in range(self.agent_num):
             self.addReserve(0, agent_pos[i], i)
 
-        action = []
         for i in range(self.agent_num):
             #print 'agent ' + str(i) + ' in pos ' + str(agent_pos[i])
             if len(self.schedule[i]) <= 1 or end_poses[i] != [-1, -1]:
@@ -198,7 +194,10 @@ class WHCA:
                 print i
                 print self.schedule[i][0][0]
                 print agenet_pos[i]
-            #print ['schedule', self.schedule[i]]
+            print ['schedule', self.schedule[i]]
+        
+        action = []
+        for i in range(self.agent_num):
             [pos, a] = self.schedule[i][0]
             del self.schedule[i][0]
             action.append(a)
@@ -217,8 +216,16 @@ def main():
     agent_pos = [[0, 0], [0, 1]]
     agent_city = [-1, -1]
     end_poses = [hole_pos, hole_pos]
-    print whca.getJointAction(agent_pos, agent_city, end_poses)
-    print whca.schedule
-
+    
+    while agent_pos != end_poses:
+        print 'agent_pos ' + str(agent_pos)
+        action = whca.getJointAction(agent_pos, agent_city, end_poses)
+        for i in range(agent_num):
+            print whca.schedule[i]
+            agent_pos[i] = [agent_pos[i][0] + action[i][0], agent_pos[i][1] + action[i][1]]
+        for t in range(len(whca.reserve)):
+            print whca.reserve[t]
+        print 'action ' + str(action)
+        
 if __name__ == "__main__":
     main()
