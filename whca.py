@@ -46,6 +46,8 @@ class WHCA:
         entry = encode(pos)
         for i in self.reserve_interval:
             t = time + i
+            if t < 0:
+                continue
             if entry in self.reserve[t]:
                 [reserved_agent_id, schedule_time] = self.reserve[t][entry]
                 #print 'entry collision ' + str(entry) + ' new ' + str(agent_id) + ' old ' + str(i)
@@ -141,7 +143,7 @@ class WHCA:
         #print 'End self.AStar'
         return schedule
 
-    def findEndPos(self, city, agent_id, t):
+    def findEndPos(self, city, agent_id):
         start_pos = self.agent_pos[agent_id]
         min_distance = -1
         if city == -1:
@@ -161,7 +163,7 @@ class WHCA:
     
         return end_pos
 
-    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval = [0, 1]):
+    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval = [0, 2]):
         self.window = window
         self.source_pos = source_pos
         self.hole_pos = hole_pos
@@ -177,39 +179,30 @@ class WHCA:
         self.agent_pos = agent_pos
 
         for i in range(self.agent_num):
-            self.addReserve(encode(agent_pos[i], time + 1), i)
-            self.addReserve(encode(agent_pos[i], time + 2), i)
+            self.addReserve(0, agent_pos[i], i)
 
         action = []
         for i in range(self.agent_num):
             #print 'agent ' + str(i) + ' in pos ' + str(agent_pos[i])
-            if len(self.schedule[i]) == 0:
-                self.schedule[i] = self.AStar(i, agent_pos[i], end_poses[i], agent_pos)
-                for [pos, t, a] in self.schedule[i]:
-                    self.addReserve(encode(pos, t), i)
-                    self.addReserve(encode(pos, t + 1), i)
-            elif len(self.schedule[i]) == 1:
+            if len(self.schedule[i]) <= 1 or end_poses[i] != [-1, -1]:
                 self.removeSchedule(i)
-                self.schedule[i] = self.AStar(i, agent_pos[i], end_poses[i], agent_pos)
-                for [pos, t, a] in self.schedule[i]:
-                    self.addReserve(encode(pos, t), i)
-                    self.addReserve(encode(pos, t + 1), i)
-            else:
-                [pos, t, a] = self.schedule[i][0]
-                if pos != agent_pos[i]:
-                    self.removeSchedule(i)
-                    self.schedule[i] = self.AStar(i, agent_pos[i], end_poses[i], agent_pos)
-                    for [pos, t, a] in self.schedule[i]:
-                        self.addReserve(encode(pos, t), i)
-                        self.addReserve(encode(pos, t + 1), i)
+                if end_poses[i] == [-1, -1]:
+                    end_pos = findEndPos(agent_city[i], i)
+                else:
+                    end_pos = end_poses[i]
+                schedule = self.AStar(i, agent_pos[i], end_pos, agent_pos)
+                self.setSchedule(i, schedule)
+            if self.schedule[i][0][0] != agent_pos[i]:
+                print 'unexpected agent pos'
+                print i
+                print self.schedule[i][0][0]
+                print agenet_pos[i]
             #print ['schedule', self.schedule[i]]
             [pos, t, a] = self.schedule[i][0]
             del self.schedule[i][0]
-            del self.reserve[encode(pos, t)]
-            if a != [0, 0]:
-                del self.reserve[encode(pos, t + 1)]
             action.append(a)
-
+            
+        del self.reserve[0]
         return action
 
 
