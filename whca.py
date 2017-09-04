@@ -48,6 +48,8 @@ class WHCA:
             t = time + i
             if t < 0:
                 continue
+            if t == len(self.reserve):
+                self.reserve.append({})
             if entry in self.reserve[t]:
                 [reserved_agent_id, schedule_time] = self.reserve[t][entry]
                 #print 'entry collision ' + str(entry) + ' new ' + str(agent_id) + ' old ' + str(i)
@@ -201,7 +203,7 @@ class WHCA:
             [pos, t, a] = self.schedule[i][0]
             del self.schedule[i][0]
             action.append(a)
-            
+
         del self.reserve[0]
         return action
 
