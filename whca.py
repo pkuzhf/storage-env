@@ -18,7 +18,6 @@ def decode(m):
 class WHCA:
 
     def setSchedule(self, agent_id, schedule):
-        self.removeSchedule(agent_id)
         for [start_pos, action] in schedule:
             time = len(self.schedule[agent_id])
             self.addReserve(time, start_pos, agent_id)
