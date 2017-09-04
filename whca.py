@@ -48,7 +48,7 @@ class WHCA:
             t = time + i
             if t < 0:
                 continue
-            if t == len(self.reserve):
+            while t >= len(self.reserve):
                 self.reserve.append({})
             if entry in self.reserve[t]:
                 [reserved_agent_id, schedule_time] = self.reserve[t][entry]
