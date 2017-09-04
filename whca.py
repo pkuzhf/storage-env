@@ -127,17 +127,17 @@ class WHCA:
 
             if pos == end_pos or g[t][encode(pos)] == self.window or len(open_set) == 0:
                 while (path[t][encode(pos)] != [[-1, -1], -1, -1]):
-                    schedule.insert(0, path[t][encode(pos)])
                     [pos, t, a] = path[t][encode(pos)]
+                    schedule.insert(0, [pos, a])
                 break
                 
         if len(schedule) == 0:
             #print 'fail to schedule, stay'
             #print path
-            schedule.append([start_pos, t, [0, 0]])
+            schedule.append([start_pos, [0, 0]])
         [pos, t, a] = schedule[-1]
         new_pos = [pos[0] + a[0], pos[1] + a[1]]
-        schedule.append([new_pos, t + 1, None])
+        schedule.append([new_pos, None])
         #print 'self.AStar'
         #print ['start_pos', start_pos, 'end_pos', end_pos]
         #print ['schedule', schedule]
