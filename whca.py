@@ -70,7 +70,7 @@ class WHCA:
             #print 'not valid: out of map'
             return False
         for i in self.reserve_interval:
-            if encode(pos) in self.reserve[t] and self.reserve[t][encode(pos)][0] != agent_id:
+            if t < len(self.reserve) and encode(pos) in self.reserve[t] and self.reserve[t][encode(pos)][0] != agent_id:
                 #print 'not valid: reserved by ' + str(self.reserve[encode(pos, t)])
                 return False
         if pos == end_pos:
