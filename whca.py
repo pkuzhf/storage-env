@@ -199,7 +199,7 @@ class WHCA:
                 print self.schedule[i][0][0]
                 print agenet_pos[i]
             #print ['schedule', self.schedule[i]]
-            [pos, t, a] = self.schedule[i][0]
+            [pos, a] = self.schedule[i][0]
             del self.schedule[i][0]
             action.append(a)
 
