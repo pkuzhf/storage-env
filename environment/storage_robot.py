@@ -93,8 +93,12 @@ class AGENT_GYM(gym.Env):
             a = dir[action[i]]
             if a not in self.trans[self.agent_pos[i][1]][self.agent_pos[i][0]]:
                 rewards[i] -= illegal
-            # TODO could cause same destination
-            agent_next_pos.append([pos[0] + a[0], pos[1] + a[1]])
+            # TODO simple resolution
+            next_pos = [pos[0] + a[0], pos[1] + a[1]]
+            if next_pos not in agent_next_pos:
+                agent_next_pos.append(next_pos)
+            else:
+                agent_next_pos.append(pos)
             if a == [0, 0]:
                 done[i] = True
             elif not utils.inMap(agent_next_pos[i]):
