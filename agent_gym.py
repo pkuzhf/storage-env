@@ -61,16 +61,16 @@ class AGENT_GYM(gym.Env):
             pos = self.agent_pos[i]
             a = action[i]
             agent_next_pos.append([pos[0] + a[0], pos[1] + a[1]])
-            if a == [0, 0]:
+            if agent_next_pos[i] == pos[i]:
                 done[i] = True
             elif !utils.inMap(agent_next_pos[i]):
-                agent_next_pos[i] = self.agent_pos[i]
+                agent_next_pos[i] = pos[i]
                 done[i] = True
             elif agent_next_pos[i] in self.source_pos and self.agent_city[i] != -1:
-                agent_next_pos[i] = self.agent_pos[i]
+                agent_next_pos[i] = pos[i]
                 done[i] = True
             elif agent_next_pos[i] in self.hole_pos and self.agent_city[i] != self.hole_city[self.hole_pos.index[agent_next_pos[i]]]:
-                agent_next_pos[i] = self.agent_pos[i]
+                agent_next_pos[i] = pos[i]
                 done[i] = True
 
         # circle
