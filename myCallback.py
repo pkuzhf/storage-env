@@ -96,3 +96,17 @@ class myTrainEpisodeLogger(Callback):
         self.actions[episode].append(logs['action'])
         self.metrics[episode].append(logs['metrics'])
         self.step += 1
+
+
+class myTestLogger(Callback):
+    def on_train_begin(self, logs):
+        print('Testing for {} episodes ...'.format(self.params['nb_episodes']))
+
+    def on_episode_end(self, episode, logs={}):
+        template = 'Episode {0}: reward: {1}, steps: {2}'
+        variables = [
+            episode + 1,
+            logs['episode_reward'],
+            logs['nb_steps'],
+        ]
+        print(template.format(*variables))

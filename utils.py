@@ -6,32 +6,42 @@ import tensorflow as tf
 from collections import deque
 
 # right, down, up, left
-dirs = [[0, 1], [1, 0], [-1, 0], [0, -1]]
+dirs = np.array([[0, 1], [1, 0], [-1, 0], [0, -1]])
 dir_symbols = ['>', 'v', '^', '<']
 #map_symbols = ['0', '1', '2', '3']
 map_symbols = ['.', '#', 'S', 'T']
 
-class Cell:
-    CellSize = 4
-
-    Path  = 0
-    Hole   = 1
-    Source = 2
-    Robot = 3
-
-    PathV  = np.array([1, 0, 0, 0])
-    HoleV   = np.array([0, 1, 0, 0])
-    SourceV = np.array([0, 0, 1, 0])
-    RobotV = np.array([0, 0, 0, 1])
-
-    Value = [np.array([1, 0, 0, 0]), np.array([0, 1, 0, 0]), np.array([0, 0, 1, 0]), np.array([0, 0, 0, 1])]
 
 def inMap(pos):
     [x, y] = pos
-    return x >= 0 and x < config.Map.Height and y >= 0 and y < config.Map.Width
+    return x >= 0 and x < config.Map.Width and y >= 0 and y < config.Map.Height
 
-def getDistance(start_pos, end_pos):
-    return abs(start_pos[0] - end_pos[0]) + abs(start_pos[1] - end_pos[1])
+def findSourceAndTarget(mazemap):
+    sx, sy, tx, ty = -1, -1, -1, -1
+    for i in range(config.Map.Height):
+        for j in range(config.Map.Width):
+            if mazemap[i, j, Cell.Source] == 1:
+                sx = i
+                sy = j
+            if mazemap[i, j, Cell.Target] == 1:
+                tx = i
+                ty = j
+    return sx, sy, tx, ty
+
+def initMazeMap():
+    mazemap = np.zeros([config.Map.Width, config.Map.Height, 4], dtype=np.int64)
+    return mazemap
+
+def displayMap(mazemap):
+    output = ''
+    for i in range(config.Map.Height):
+        for j in range(config.Map.Width):
+            cell = mazemap[i, j]
+            for k in range(4):
+                if cell[k]:
+                    output += map_symbols[k]
+        output += '\n'
+    print output,
 
 def displayQvalue(qvalues):
     if len(qvalues)==config.Map.Height*config.Map.Width+1:
