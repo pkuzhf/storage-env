@@ -10,7 +10,7 @@ import utils
 from agent.agent_gym import AGENT_GYM
 from policy import *
 from myCallback import myTestLogger
-
+from mcts import MyMCTS
 
 class ENV_GYM(gym.Env):
 
@@ -37,6 +37,8 @@ class ENV_GYM(gym.Env):
         self.reward_his = deque(maxlen=1000)
 
         self.used_agent = False
+
+        self.mcts = MyMCTS()
 
         self.actions_to_paths = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
                         [1,1,0,0],[1,0,1,0],[1,0,0,1],[0,1,1,0],[0,1,0,1],[0,0,1,1],
@@ -81,7 +83,12 @@ class ENV_GYM(gym.Env):
                       # +'   agent qvalues: ' + utils.string_values(self.agent.q_values))
         else:
             # TODO MCTS reward
-            reward = 0
+            target_node = self.mcts.SEARCHNODE(self.pathes)
+            end_node = self.mcts.TREEPOLICY(target_node)
+            pathes = self.mcts.MOVETOPATH(end_node.state)
+            reward = self._get_reward_from_agent(pathes)
+            self.mcts.BACKUP(end_node, reward)
+            # reward = 0
 
         self.gamestep += 1
 
@@ -101,7 +108,7 @@ class ENV_GYM(gym.Env):
         #self.agent.memory.__init__(config.Training.AgentBufferSize, window_length=1)
         # we do not reset the agent network, to accelerate the training.
         while True:
-            self.agent.fit(agent_gym, nb_steps=10000, log_interval=10000, verbose=2)
+            self.agent.fit(agent_gym, nb_steps=20000, log_interval=10000, verbose=2)
 
             # print('agent rewards: ' + utils.string_values(self.agent.reward_his))
                   # + '   agent qvalues: ' + utils.string_values(self.agent.q_values))
@@ -110,26 +117,5 @@ class ENV_GYM(gym.Env):
             bonus += 5
             testlogger = [myTestLogger()]
             self.agent.test_reward_his.clear()
-            self.agent.test(agent_gym, nb_episodes=10, visualize=False, callbacks=testlogger, verbose=0)
+            self.agent.test(agent_gym, nb_episodes=3, visualize=False, callbacks=testlogger, verbose=0)
             return np.mean(self.agent.test_reward_his)
-
-
-    # def rollout_env_map(self, mazemap=None, policy=None): #mazemap and policy state might get change
-    #
-    #     if mazemap is None:
-    #         mazemap = utils.initMazeMap()
-    #
-    #     if policy is None:
-    #         policy = self.env.test_policy
-    #
-    #     mask = self._getmask(mazemap)
-    #     policy.set_mask(mask)
-    #
-    #     while True:
-    #         q_values = self.env.compute_q_values([mazemap])
-    #         action = policy.select_action(q_values=q_values)
-    #         done, conflict, invalid = self._act(mazemap, action, policy.mask)
-    #         if done:
-    #             break
-    #
-    #     return mazemap
