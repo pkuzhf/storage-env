@@ -66,6 +66,7 @@ class Node:
     def add_child(self, child_state):
         child = Node(child_state, self)
         self.children.append(child)
+        return child
 
     def update(self, reward):
         self.reward += reward
@@ -91,16 +92,17 @@ class MyMCTS:
                 if pathes[i][j][0] == -1:
                     return current_node
                 action = actions_to_paths.index(pathes[i][j].tolist())
-                tried_children = [c.state for c in current_node.children]
+                tried_children = current_node.children
                 target_child = None
                 for k in range(len(tried_children)):
-                    if action == tried_children[k].move[-1]:
+                    if action == tried_children[k].state.moves[-1]:
                         target_child = tried_children[k]
                         break
                 if target_child is not None:
                     current_node = target_child
                 else:
-                    current_node.add_child(State(0, current_node.state.moves + [action], current_node.state.step - 1))
+                    current_node = current_node.add_child(State(0, current_node.state.moves + [action], current_node.state.step - 1))
+
         return current_node
 
 
@@ -123,6 +125,13 @@ class MyMCTS:
                 node = self.BESTCHILD(node, SCALAR)
         return node
 
+    def TREEPOLICYEND(self, node):
+        while node.state.terminal() == False:
+            if node.fully_expanded() == False:
+                node = self.EXPAND(node)
+            else:
+                node = self.BESTCHILD(node, SCALAR)
+        return node
 
     def EXPAND(self, node):
         tried_children = [c.state for c in node.children]
@@ -140,7 +149,7 @@ class MyMCTS:
         for c in node.children:
             if c.visits == 0:
                 exploit = 0
-                explore = math.sqrt(math.log(2 * node.visits) / 0.01)
+                explore = 1000
             else:
                 exploit = c.reward / c.visits
                 explore = math.sqrt(math.log(2 * node.visits) / float(c.visits))
