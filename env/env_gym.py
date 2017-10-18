@@ -69,10 +69,10 @@ class ENV_GYM(gym.Env):
         return [seed]
 
     def _step(self, action):
-        print(action)
+        print("action:", action)
         done = (self.gamestep == config.Map.Width*config.Map.Height-1)
 
-        self.pathes[self.gamestep%config.Map.Width][self.gamestep/config.Map.Height] = self.actions_to_paths[action]
+        self.pathes[self.gamestep/config.Map.Width][self.gamestep%config.Map.Height] = self.actions_to_paths[action]
 
         if done:
             pathes = copy.deepcopy(self.pathes)
@@ -84,8 +84,9 @@ class ENV_GYM(gym.Env):
         else:
             # MCTS reward
             target_node = self.mcts.SEARCHNODE(self.pathes)
+            # print self.pathes
             # print target_node.state.moves
-            # print target_node.state.step
+            print "step: ", target_node.state.step
             end_node = self.mcts.TREEPOLICYEND(target_node)
             # print end_node.state.moves
             # print end_node.state.step
