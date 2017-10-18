@@ -93,7 +93,7 @@ class AGENT_GYM(gym.Env):
                 agent_next_pos.append(next_pos)
             else:
                 agent_next_pos.append(pos)
-            if a == [0, 0]:
+            if pos == agent_next_pos[i]:
                 done[i] = True
             elif not utils.inMap(agent_next_pos[i]):
                 agent_next_pos[i] = self.agent_pos[i]
@@ -121,6 +121,9 @@ class AGENT_GYM(gym.Env):
             if len(circle) > 0 and j == circle[0]:
                 if len(circle) == 1:
                     print 'error: len(circle) == 1'
+                    print self.agent_pos
+                    print agent_next_pos
+                    print done
                 if len(circle) == 2:
                     agent_next_pos[circle[0]] = self.agent_pos[circle[0]]
                     agent_next_pos[circle[1]] = self.agent_pos[circle[1]]
