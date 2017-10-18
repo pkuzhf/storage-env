@@ -243,7 +243,8 @@ class DDPGAgent(Agent):
 
         # Book-keeping.
         self.recent_observation = observation
-        self.recent_action = action
+        self.recent_action = np.zeros((14,))
+        self.recent_action[action] = 1
 
         return action
 
@@ -293,6 +294,9 @@ class DDPGAgent(Agent):
             action_batch = np.array(action_batch)
             assert reward_batch.shape == (self.batch_size,)
             assert terminal1_batch.shape == reward_batch.shape
+            print action_batch.shape
+            print action_batch
+            print (self.batch_size, self.nb_actions)
             assert action_batch.shape == (self.batch_size, self.nb_actions)
 
             # Update critic, if warm up is over.
