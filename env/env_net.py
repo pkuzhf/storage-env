@@ -13,7 +13,7 @@ def get_env_actor_net():
     m = config.Map.Width
     d = 4
 
-    observation = Input(shape=(m, n, d), name='observation_input_actor')
+    observation = Input(shape=(1, m, n, d), name='observation_input_actor')
     x = Reshape((m*n, d))(observation)
     x = Masking(mask_value=-1)(x)
 
@@ -39,7 +39,7 @@ def get_env_critic_net():
     d = 4
 
     action = Input(shape=(14,), name='action_input')
-    observation = Input(shape=(m, n, d), name='observation_input_critic')
+    observation = Input(shape=(1, m, n, d), name='observation_input_critic')
     flattened_observation = Flatten()(observation)
     x = Concatenate(axis=1)([action, flattened_observation])
     x = Masking(mask_value=-1)(x)
