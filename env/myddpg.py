@@ -221,7 +221,7 @@ class DDPGAgent(Agent):
         return self.processor.process_state_batch(batch)
 
     def select_action(self, state):
-        batch = self.process_state_batch(state)
+        batch = self.process_state_batch([state])
         action = self.actor.predict_on_batch(batch).flatten()
         assert action.shape == (self.nb_actions,)
 
@@ -294,9 +294,9 @@ class DDPGAgent(Agent):
             action_batch = np.array(action_batch)
             assert reward_batch.shape == (self.batch_size,)
             assert terminal1_batch.shape == reward_batch.shape
-            print action_batch.shape
-            print action_batch
-            print (self.batch_size, self.nb_actions)
+            # print action_batch.shape
+            # print action_batch
+            # print (self.batch_size, self.nb_actions)
             assert action_batch.shape == (self.batch_size, self.nb_actions)
 
             # Update critic, if warm up is over.
