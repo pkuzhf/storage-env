@@ -56,7 +56,11 @@ class ENV_GYM(gym.Env):
         return [seed]
 
     def _step(self, action):
+<<<<<<< HEAD
         print "action:", action
+=======
+        print("action:", action)
+>>>>>>> beaaa6734b1a0fcd0024155ca99eff9644ec303f
         done = (self.gamestep == config.Map.Width*config.Map.Height-1)
 
         self.pathes[self.gamestep/config.Map.Width][self.gamestep%config.Map.Height] = self.actions_to_paths[action]
@@ -67,9 +71,20 @@ class ENV_GYM(gym.Env):
         else:
             # MCTS reward
             target_node = self.mcts.SEARCHNODE(self.pathes)
+<<<<<<< HEAD
             print "step: ", target_node.state.step
             end_node = self.mcts.TREEPOLICYEND(target_node)
             pathes = self.mcts.MOVETOPATH(end_node.state)
+=======
+            # print self.pathes
+            # print target_node.state.moves
+            print "step: ", target_node.state.step
+            end_node = self.mcts.TREEPOLICYEND(target_node)
+            # print end_node.state.moves
+            # print end_node.state.step
+            pathes = self.mcts.MOVETOPATH(end_node.state)
+            # assert 0
+>>>>>>> beaaa6734b1a0fcd0024155ca99eff9644ec303f
             reward = self._get_reward_from_agent(pathes)
             self.mcts.BACKUP(end_node, reward)
             # reward = 0
@@ -90,16 +105,29 @@ class ENV_GYM(gym.Env):
         self.agent.reward_his.clear()
         # we do not reset the agent network, to accelerate the training.
         while True:
+<<<<<<< HEAD
             if self.used_agent:
                 self.agent.fit(agent_gym, nb_steps=10000, log_interval=10000, verbose=2)
+=======
+            self.agent.fit(agent_gym, nb_steps=7000, log_interval=10000, verbose=2)
+
+            # print('agent rewards: ' + utils.string_values(self.agent.reward_his))
+                  # + '   agent qvalues: ' + utils.string_values(self.agent.q_values))
+>>>>>>> beaaa6734b1a0fcd0024155ca99eff9644ec303f
             self.agent.reward_his.clear()
             np.random.seed(None)
             bonus += 5
             testlogger = [myTestLogger()]
             self.agent.test_reward_his.clear()
+<<<<<<< HEAD
             print mazemap
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
                 self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
             return np.mean(self.agent.test_reward_his)/50
+=======
+            self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
+            print mazemap
+            return np.mean(self.agent.test_reward_his)
+>>>>>>> beaaa6734b1a0fcd0024155ca99eff9644ec303f
