@@ -95,7 +95,7 @@ class AGENT_GYM(gym.Env):
                 rewards[i] -= illegal
             # TODO simple resolution
             next_pos = [pos[0] + a[0], pos[1] + a[1]]
-            if next_pos not in agent_next_pos:
+            if pos == agent_next_pos[i]:
                 agent_next_pos.append(next_pos)
             else:
                 agent_next_pos.append(pos)
