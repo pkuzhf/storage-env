@@ -6,7 +6,7 @@ import tensorflow as tf
 from collections import deque
 
 # right, down, up, left
-dirs = np.array([[0, 1], [1, 0], [-1, 0], [0, -1]])
+dirs = np.array([[1, 0], [0, 1], [-1, 0], [0, -1]])
 dir_symbols = ['>', 'v', '^', '<']
 #map_symbols = ['0', '1', '2', '3']
 map_symbols = ['.', '#', 'S', 'T']
@@ -15,18 +15,6 @@ map_symbols = ['.', '#', 'S', 'T']
 def inMap(pos):
     [x, y] = pos
     return x >= 0 and x < config.Map.Width and y >= 0 and y < config.Map.Height
-
-def findSourceAndTarget(mazemap):
-    sx, sy, tx, ty = -1, -1, -1, -1
-    for i in range(config.Map.Height):
-        for j in range(config.Map.Width):
-            if mazemap[i, j, Cell.Source] == 1:
-                sx = i
-                sy = j
-            if mazemap[i, j, Cell.Target] == 1:
-                tx = i
-                ty = j
-    return sx, sy, tx, ty
 
 def initMazeMap():
     mazemap = np.zeros([config.Map.Width, config.Map.Height, 4], dtype=np.int64)
@@ -82,24 +70,8 @@ def get_session():
     config.gpu_options.allow_growth = True
     return tf.Session(config=config)
 
-#def equalCellValue(mazemap, x, y, index):
-#    return mazemap[x, y, index] == 1
-
-#def nequalCellValue(mazemap, x, y, index):
-#    return not mazemap[x, y, index] == 1
-
-#def setCellValue(mazemap, x, y, index):
-#    mazemap[x, y] = Cell.Value[index]
-
-#def getCellValue(mazemap, x, y):
-#    return mazemap[x, y]
-
-#def getDistance(sx, sy, tx, ty):
-#    return abs(sx - tx) + abs(sy - ty)
-
 
 class qlogger(object):
-
     def __init__(self):
 
         self.minq = 1e20
@@ -109,6 +81,7 @@ class qlogger(object):
         self.cur_minq = 1e20
         self.cur_maxq = 1e20
         self.mean_maxq = deque(maxlen=1000)
+
 
 def string_values(list, format='%.3f '):
     output = ''

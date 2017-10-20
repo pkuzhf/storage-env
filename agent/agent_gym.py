@@ -9,6 +9,7 @@ from gym.utils import seeding
 from collections import deque
 # from whca import WHCA
 from result_visualizer import ResultVisualizer
+from whca import WHCA
 
 
 class AGENT_GYM(gym.Env):
@@ -28,11 +29,14 @@ class AGENT_GYM(gym.Env):
         self.agent_reward = [0] * agent_num
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
+        if not self.no_astar:
+            self.window = 5
+            self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
 
     def genCity(self, city_dis):
         return np.random.multinomial(1, city_dis, size=1).tolist()[0].index(1)
 
-    def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, trans=None):
+    def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, trans=None, no_astar=False):
 
         self._seed()
 
@@ -42,6 +46,7 @@ class AGENT_GYM(gym.Env):
         self.hole_city = hole_city
         self.agent_num = agent_num
         self.city_dis = city_dis
+        self.no_astar = no_astar  # default is use astar
 
         if trans is None:
             self.trans = np.zeros((config.Map.Width, config.Map.Height, 4))
@@ -53,6 +58,7 @@ class AGENT_GYM(gym.Env):
         self.steps = 0
         self.visualizer = ResultVisualizer([config.Map.Width, config.Map.Height], source_pos, hole_pos,
                                            hole_city, city_dis, agent_num, "pics/result")
+
     def EnableResultVisualizer(self):
         self.visualizer.enable = True
         self.visualizer.wirte_static_info()
@@ -77,6 +83,9 @@ class AGENT_GYM(gym.Env):
         pick_drop = 5
 
         agent_next_pos = []
+        if not self.no_astar:
+            astar_action = self.whca.getJointAction(self.agent_pos, self.agent_city, [[-1,-1]]*len(action))
+
         done = [False] * len(action)
 
         self.steps += 1
@@ -84,16 +93,18 @@ class AGENT_GYM(gym.Env):
         # invalid
         for i in range(self.agent_num):
             pos = self.agent_pos[i]
-            a = dir[action[i]]
-            if self.trans[self.agent_pos[i][0]][self.agent_pos[i][1]][action[i]] == 0:
-                rewards[i] -= illegal
-            # TODO could cause same destination
+            if self.no_astar:
+                a = dir[action[i]]
+                if self.trans[self.agent_pos[i][0]][self.agent_pos[i][1]][action[i]] == 0:
+                    rewards[i] -= illegal
+            else:
+                a = astar_action[i]
             next_pos = [pos[0] + a[0], pos[1] + a[1]]
             if next_pos not in agent_next_pos:
                 agent_next_pos.append(next_pos)
             else:
                 agent_next_pos.append(pos)
-            if a == [0, 0]:
+            if pos == agent_next_pos[i]:
                 done[i] = True
             elif not utils.inMap(agent_next_pos[i]):
                 agent_next_pos[i] = self.agent_pos[i]
@@ -121,6 +132,9 @@ class AGENT_GYM(gym.Env):
             if len(circle) > 0 and j == circle[0]:
                 if len(circle) == 1:
                     print 'error: len(circle) == 1'
+                    print self.agent_pos
+                    print agent_next_pos
+                    print done
                 if len(circle) == 2:
                     agent_next_pos[circle[0]] = self.agent_pos[circle[0]]
                     agent_next_pos[circle[1]] = self.agent_pos[circle[1]]

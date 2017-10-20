@@ -44,11 +44,11 @@ def main():
     agent_gym.seed(config.Game.Seed)
 
     memory = SequentialMemory(limit=400000, window_length=4)
-    policy = EpsGreedyQPolicy(eps=0.5, end_eps=0.01, steps=9000)
+    policy = EpsGreedyQPolicy(eps=0.1, end_eps=0.1, steps=1000)
     policy2 = GreedyQPolicy2D()
     agent_model = get_agent_net()
     agent = AgentDQN(model=agent_model, nb_actions=config.Game.AgentAction, policy=policy, memory=memory,
-               nb_steps_warmup=1000, gamma=.95, target_model_update=10000,
+               nb_steps_warmup=1000, gamma=.95, target_model_update=5000,
                train_interval=4, delta_clip=1., test_policy=policy2, agent_num=config.Game.AgentNum)
     agent.compile(Adam(lr=.00025), metrics=['mae'])
 
@@ -71,7 +71,7 @@ def main():
 
 def run_env_path(env, env_gym):
 
-    nround = 10000
+    nround = 100
     model_folder = config.Path.Models
 
     makedirs(model_folder)
@@ -79,11 +79,12 @@ def run_env_path(env, env_gym):
     makedirs(config.Path.Figs)
 
     for round in range(nround):
-
+        print "------------------------------------------------------"
         print('\n\nround train ' + str(round) + '/' + str(nround))
-        env.fit(env_gym, nb_steps=1000*36, visualize=False, verbose=2)
+        print "------------------------------------------------------"
+        env.fit(env_gym, nb_steps=1000, visualize=False, verbose=2)
         # env.nb_steps_warmup = 0
-        env.test(env_gym, nb_episodes=10, visualize=False, verbose=2)
+        env.test(env_gym, nb_episodes=3, visualize=False, verbose=2)
         env.save_weights(model_folder + '/generator_model_weights_{}.h5f'.format(str(round)), overwrite=True)
 
 
