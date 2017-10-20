@@ -17,6 +17,13 @@ actions_to_paths = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
                     [1,1,1,0],[1,1,0,1],[1,0,1,1],[0,1,1,1]]
 
 
+def choose(seq):
+    choice = int(random.random() * len(seq))
+    if choice == len(seq):
+        choice -= 1
+    return seq[choice]
+
+
 class State:
     NUM_TURNS = config.Map.Width * config.Map.Width
     ACTIONS = [i for i in range(14)]
@@ -29,7 +36,7 @@ class State:
         self.moves = moves
 
     def next_state(self):
-        nextmove = random.choice(self.ACTIONS)
+        nextmove = choose(self.ACTIONS)
         next = State(0, self.moves + [nextmove], self.step - 1)
         return next
 
@@ -161,7 +168,8 @@ class MyMCTS:
                 bestscore = score
         if len(bestchildren) == 0:
             logger.warn("OOPS: no best child found, probably fatal")
-        return random.choice(bestchildren)
+        # TODO random itself has a bug
+        return choose(bestchildren)
 
 
     def DEFAULTPOLICY(self, state):
@@ -185,13 +193,3 @@ class MyMCTS:
         print pathes.shape
         return pathes
 
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description='MCTS research code')
-#     parser.add_argument('--num_sims', action="store", required=True, type=int)
-#     parser.add_argument('--levels', action="store", required=True, type=int, choices=range(State.NUM_TURNS))
-#     args = parser.parse_args()
-#
-#     current_node = Node(State())
-#     for l in range(args.levels):
-#         current_node = UCTSEARCH(args.num_sims / (l + 1), current_node)
-#         print("level %d" % l)#!/usr/bin/env python
