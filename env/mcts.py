@@ -168,10 +168,6 @@ class MyMCTS:
                 bestscore = score
         if len(bestchildren) == 0:
             logger.warn("OOPS: no best child found, probably fatal")
-<<<<<<< HEAD
-=======
-        # TODO random itself has a bug
->>>>>>> beaaa6734b1a0fcd0024155ca99eff9644ec303f
         return choose(bestchildren)
 
 
