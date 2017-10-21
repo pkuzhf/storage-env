@@ -21,7 +21,12 @@ def choose(seq):
     choice = int(random.random() * len(seq))
     if choice == len(seq):
         choice -= 1
-    return seq[choice]
+    try:
+        return seq[choice]
+    except:
+        print "out of range happened", seq
+        print choice
+        return seq[0]
 
 
 class State:
@@ -151,7 +156,7 @@ class MyMCTS:
 
     # current this uses the most vanilla MCTS formula it is worth experimenting with THRESHOLD ASCENT (TAGS)
     def BESTCHILD(self, node, scalar):
-        bestscore = 0.0
+        bestscore = -1000.0
         bestchildren = []
         for c in node.children:
             if c.visits == 0:
