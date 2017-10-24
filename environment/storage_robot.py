@@ -152,22 +152,17 @@ class AGENT_GYM(gym.Env):
                     print done
                 line.append(j)
                 j = self.agent_pos.index(agent_next_pos[j])
-            if done[j]:
-                for k in range(len(line)):
-                    if agent_next_pos[j] == self.agent_pos[j]:
-                        agent_next_pos[k] = self.agent_pos[k]
-                    done[line[k]] = True
-            else:
+            if not done[j]:
                 line.append(j)
-                collision = False
-                for k in range(self.agent_num):
-                    if done[k] and agent_next_pos[k] == agent_next_pos[j]:
-                        collision = True
-                        break
-                for k in range(len(line)):
-                    if collision:
-                        agent_next_pos[k] = self.agent_pos[k]
-                    done[line[k]] = True
+			collision = False
+			for k in range(self.agent_num):
+				if done[k] and agent_next_pos[k] == agent_next_pos[j]:
+					collision = True
+					break
+			for k in range(len(line)):
+				if collision:
+					agent_next_pos[line[k]] = self.agent_pos[line[k]]
+                done[line[k]] = True
 
         if False in done:
             print 'error: False in done'
