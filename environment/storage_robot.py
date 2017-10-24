@@ -99,7 +99,7 @@ class AGENT_GYM(gym.Env):
                 agent_next_pos.append(next_pos)
             else:
                 agent_next_pos.append(pos)
-            if a == [0, 0]:
+            if pos == agent_next_pos[i]:
                 done[i] = True
             elif not utils.inMap(agent_next_pos[i]):
                 agent_next_pos[i] = self.agent_pos[i]
