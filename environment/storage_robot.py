@@ -154,14 +154,14 @@ class AGENT_GYM(gym.Env):
                 j = self.agent_pos.index(agent_next_pos[j])
             if not done[j]:
                 line.append(j)
-			collision = False
-			for k in range(self.agent_num):
-				if done[k] and agent_next_pos[k] == agent_next_pos[j]:
-					collision = True
-					break
-			for k in range(len(line)):
-				if collision:
-					agent_next_pos[line[k]] = self.agent_pos[line[k]]
+            collision = False
+            for k in range(self.agent_num):
+                if done[k] and agent_next_pos[k] == agent_next_pos[j]:
+                    collision = True
+                    break
+            for k in range(len(line)):
+                if collision:
+                    agent_next_pos[line[k]] = self.agent_pos[line[k]]
                 done[line[k]] = True
 
         if False in done:
@@ -202,7 +202,6 @@ class AGENT_GYM(gym.Env):
         if self.visualizer.enable:
             self.visualizer.write_ob(self.steps,self.agent_pos, self.agent_city, self.agent_reward,
                                      self.hole_reward, self.source_reward, sum(pack_count))
-
         return self.format_ob(), np.array(rewards), done, {}
         # return [self.agent_pos, self.agent_city, self.agent_reward, self.hole_reward, self.source_reward], rewards, done, {}
 
