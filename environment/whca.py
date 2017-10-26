@@ -3,9 +3,9 @@ import numpy as np
 # from agent_gym import AGENT_GYM
 import config, utils
 # import matplotTest as draw
-import mapGenerator as MG
+# import mapGenerator as MG
 import copy
-
+import Queue
 
 def encode(pos):
     [x, y] = pos
@@ -88,7 +88,7 @@ class WHCA:
         open_set.append([start_pos, 0])
         pos = start_pos
         g[0][encode(pos)] = 0
-        h[0][encode(pos)] = utils.getDistance(start_pos, end_pos)
+        h[0][encode(pos)] = self.getDistance(start_pos, end_pos)
         path[0][encode(pos)] = [[-1, -1], -1, -1]
         schedule = []
         while len(open_set) > 0:
@@ -105,7 +105,12 @@ class WHCA:
             close_set.append([pos, t])
 
             # dirs = utils.dirs + [[0, 0]]
-            dirs = utils.dirs
+            # dirs = utils.dirs
+            all_dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+            dirs = [[0, 0]]
+            for i in range(4):
+                if self.trans[start_pos[0]][start_pos[1]][i] == 1:
+                    dirs.append(all_dir[i])
             for i in range(len(dirs)):
                 a = dirs[i]
                 new_pos = [pos[0] + a[0], pos[1] + a[1]]
@@ -118,7 +123,7 @@ class WHCA:
                 if [new_pos, t + 1] not in open_set:
                     open_set.append([new_pos, t + 1])
                     g[t + 1][encode(new_pos)] = new_g
-                    h[t + 1][encode(new_pos)] = utils.getDistance(new_pos, end_pos)
+                    h[t + 1][encode(new_pos)] = self.getDistance(new_pos, end_pos)
                     path[t + 1][encode(new_pos)] = [pos, t, a]
                 elif new_g < g[t + 1][encode(new_pos)]:
                     g[t + 1][encode(new_pos)] = new_g
@@ -148,7 +153,7 @@ class WHCA:
         min_distance = -1
         if city == -1:
             for i in range(len(self.source_pos)):
-                distance = utils.getDistance(self.source_pos[i], start_pos)
+                distance = self.getDistance(self.source_pos[i], start_pos)
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.source_pos[i]
@@ -156,14 +161,14 @@ class WHCA:
             for i in range(len(self.hole_pos)):
                 if self.hole_city[i] != city:
                     continue
-                distance = utils.getDistance(self.hole_pos[i], start_pos)
+                distance = self.getDistance(self.hole_pos[i], start_pos)
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.hole_pos[i]
 
         return end_pos
 
-    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval=range(0, 2)):
+    def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval=range(0, 2), trans=None):
         self.window = window
         self.source_pos = source_pos
         self.hole_pos = hole_pos
@@ -173,6 +178,41 @@ class WHCA:
         self.schedule = [[]] * agent_num
         self.agent_pos = None
         self.reserve_interval = reserve_interval
+        self.trans = trans
+        self.distance = self.get_all_distance()
+
+    def get_one_distance(self, start):
+        scale = config.Map.Width * config.Map.Height
+        distance = scale * np.ones((config.Map.Width, config.Map.Height))
+        distance[start[0]][start[1]] = 0
+        queue = Queue.Queue(maxsize=config.Map.Width * config.Map.Height)
+        queue.put(start)
+        while not queue.empty():
+            current = queue.get()
+            all_dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+            ends = []
+            for i in range(4):
+                if self.trans[current[0]][current[1]][i] == 1:
+                    ends.append([current[0]+all_dir[i][0], current[1]+all_dir[i][1]])
+            for pos in ends:
+                if not utils.inMap(pos) or distance[pos[0]][pos[1]] != scale:
+                    continue
+                queue.put(pos)
+                distance[pos[0]][pos[1]] = distance[current[0]][current[1]] + 1
+        return distance
+
+    def get_all_distance(self):
+        scale = config.Map.Width * config.Map.Height
+        distance = scale * np.ones((config.Map.Width, config.Map.Height, config.Map.Width, config.Map.Height))
+        for pos in self.source_pos:
+            distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        for pos in self.hole_pos:
+            distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        return distance
+
+    def getDistance(self, start, end):
+        # print end,start
+        return self.distance[end[0]][end[1]][start[0]][start[1]]
 
     def getJointAction(self, agent_pos, agent_city, end_poses):
 
@@ -187,6 +227,7 @@ class WHCA:
                 self.removeSchedule(i)
                 if end_poses[i] == [-1, -1]:
                     end_pos = self.findEndPos(agent_city[i], i)
+                    # print end_pos
                 else:
                     end_pos = end_poses[i]
                 schedule = self.AStar(i, agent_pos[i], end_pos, agent_pos)
@@ -206,29 +247,3 @@ class WHCA:
 
         del self.reserve[0]
         return action
-
-
-def main():
-    window = 10
-    source_pos = [0, 0]
-    hole_pos = [3, 3]
-    hole_city = [0]
-    agent_num = 2
-    whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num)
-    agent_pos = [[0, 0], [0, 1]]
-    agent_city = [-1, -1]
-    end_poses = [hole_pos, hole_pos]
-
-    while agent_pos != end_poses:
-        print 'agent_pos ' + str(agent_pos)
-        action = whca.getJointAction(agent_pos, agent_city, end_poses)
-        for i in range(agent_num):
-            print whca.schedule[i]
-            agent_pos[i] = [agent_pos[i][0] + action[i][0], agent_pos[i][1] + action[i][1]]
-        for t in range(len(whca.reserve)):
-            print whca.reserve[t]
-        print 'action ' + str(action)
-
-
-if __name__ == "__main__":
-    main()
