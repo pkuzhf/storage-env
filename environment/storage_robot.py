@@ -34,14 +34,15 @@ class AGENT_GYM(gym.Env):
         self.agent_reward = [0] * agent_num
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
-        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num)
+        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0], self.trans)
         # print self.agent_pos
 
 
     def genCity(self, city_dis):
         return np.random.multinomial(1, city_dis, size=1).tolist()[0].index(1)
 
-    def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, window, agent_status = None):
+    def __init__(self, source_pos, hole_pos, agent_num, total_time, hole_city, city_dis,
+                 window, agent_status=None, trans=None):
 
         self._seed()
 
@@ -60,9 +61,12 @@ class AGENT_GYM(gym.Env):
             self.fix_agent_status = True
             [self.fixed_agent_pos, self.fixed_agent_city] = agent_status
 
+        if trans is None:
+            self.trans = np.ones((config.Map.Width, config.Map.Height, 4))
+        else:
+            self.trans = trans
         self.init(self.hole_pos, self.source_pos, self.agent_num)
-
-        self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num)
+        self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num, [0], self.trans)
 
         self.steps = 0
         self.visualizer = ResultVisualizer([config.Map.Width, config.Map.Height], source_pos, hole_pos,
@@ -87,14 +91,26 @@ class AGENT_GYM(gym.Env):
 
     def _step(self, action):
         dir = [[1, 0], [0, 1], [-1, 0], [0, -1], [0, 0]]
-        rewards = [-0.2]*self.agent_num
 
+        rewards = [-0.2] * self.agent_num
+        hit_wall = 1
+        illegal = 1
+        pick_drop = 5
+
+        agent_next_pos = []
+        done = [False] * len(action)
+
+        # find astar end pos
         end_pos = []
         for i in range(self.agent_num):
             if action[i]==-1:
                 end_pos.append([-1,-1])
             elif action[i]<5:
-                end_pos.append([self.agent_pos[i][0]+dir[action[i]][0],self.agent_pos[i][1]+dir[action[i]][1]])
+                new_pos = [self.agent_pos[i][0]+dir[action[i]][0],self.agent_pos[i][1]+dir[action[i]][1]]
+                if utils.inMap(new_pos):
+                    end_pos.append(new_pos)
+                else:
+                    end_pos.append(self.agent_pos[i])
             elif action[i]<5+len(self.source_pos):
                 if self.agent_city[i]!=-1:
                     rewards[i] -= 0.15
@@ -108,52 +124,120 @@ class AGENT_GYM(gym.Env):
                     rewards[i] += 0.
                 end_pos.append(self.hole_pos[action[i]-len(self.source_pos)-5])
 
-
         astarAction = self.whca.getJointAction(self.agent_pos, self.agent_city, end_pos)
+
         self.steps += 1
 
+        # invalid
         for i in range(self.agent_num):
             pos = self.agent_pos[i]
             a = astarAction[i]
-
-            if a == [0, 0]:
-                continue
-            pos = [pos[0] + a[0], pos[1] + a[1]]
-            #print(['agent ', i, ' try to move to ', pos])
-            if utils.inMap(pos):
-                if pos in self.agent_pos:
-                    rewards[i] -= 1
-                    # print('agent collision')
-                    pass
-                elif pos in self.source_pos: # source
-                    source_idx = self.source_pos.index(pos)
-                    if self.agent_city[i] == -1:
-                        self.agent_pos[i] = pos
-                        self.agent_city[i] = self.genCity(self.city_dis)
-                        self.source_reward[source_idx] += 1
-                        rewards[i] += 10
-                        #print('enter source')
-                    else:
-                        rewards[i] -= 1
-                        # print('source collision')
-                elif pos in self.hole_pos: # hole
-                    hole_idx = self.hole_pos.index(pos)
-                    if self.agent_city[i] == self.hole_city[hole_idx]:
-                        self.agent_pos[i] = pos
-                        self.agent_city[i] = -1
-                        self.agent_reward[i] += 1
-                        self.hole_reward[hole_idx] += 1
-                        rewards[i] += 10
-                        #print('enter hole')
-                    else:
-                        rewards[i] -= 1
-                        # print('hole collision')
-                else:
-                    #print('move from ' + str(self.agent_pos[i]) + ' to ' + str(pos))
-                    self.agent_pos[i] = pos
+            # a = dir[action[i]]
+            if a!=[0,0] and self.trans[self.agent_pos[i][0]][self.agent_pos[i][1]][dir.index(a)] == 0:
+                print "illegal"
+                rewards[i] -= illegal
+            # TODO simple resolution
+            next_pos = [pos[0] + a[0], pos[1] + a[1]]
+            if next_pos not in agent_next_pos:
+                agent_next_pos.append(next_pos)
             else:
-                rewards[i] -= 1
-                # print('out of map')
+                agent_next_pos.append(pos)
+            if pos == agent_next_pos[i]:
+                done[i] = True
+            elif not utils.inMap(agent_next_pos[i]):
+                agent_next_pos[i] = self.agent_pos[i]
+                done[i] = True
+                rewards[i] -= hit_wall
+            elif agent_next_pos[i] in self.source_pos and self.agent_city[i] != -1:
+                agent_next_pos[i] = self.agent_pos[i]
+                done[i] = True
+                rewards[i] -= hit_wall
+            elif agent_next_pos[i] in self.hole_pos and self.agent_city[i] != self.hole_city[
+                self.hole_pos.index(agent_next_pos[i])]:
+                agent_next_pos[i] = self.agent_pos[i]
+                done[i] = True
+                rewards[i] -= hit_wall
+
+        # circle
+        for i in range(self.agent_num):
+            if done[i]:
+                continue
+            circle = []
+            j = i
+            while not done[j] and j not in circle and agent_next_pos[j] in self.agent_pos:
+                circle.append(j)
+                j = self.agent_pos.index(agent_next_pos[j])
+            if len(circle) > 0 and j == circle[0]:
+                if len(circle) == 1:
+                    print 'error: len(circle) == 1'
+                if len(circle) == 2:
+                    agent_next_pos[circle[0]] = self.agent_pos[circle[0]]
+                    agent_next_pos[circle[1]] = self.agent_pos[circle[1]]
+                    done[circle[0]] = True
+                    done[circle[1]] = True
+                else:
+                    for k in range(len(circle)):
+                        done[circle[k]] = True
+
+        # line
+        for i in range(self.agent_num):
+            if done[i]:
+                continue
+            line = []
+            j = i
+            while not done[j] and agent_next_pos[j] in self.agent_pos:
+                if j in line:
+                    print 'error: duplicate in line'
+                    print i, j
+                    print line
+                    print self.agent_pos
+                    print agent_next_pos
+                    print done
+                line.append(j)
+                j = self.agent_pos.index(agent_next_pos[j])
+            if not done[j]:
+                line.append(j)
+                collision = False
+                for k in range(self.agent_num):
+                    if done[k] and agent_next_pos[k] == agent_next_pos[j]:
+                        collision = True
+                        break
+                for k in range(len(line)):
+                    if collision:
+                        agent_next_pos[line[k]] = self.agent_pos[line[k]]
+            done[line[k]] = True
+
+        if False in done:
+            print 'error: False in done'
+            print self.agent_pos
+            print agent_next_pos
+            print done
+
+        self.agent_pos = agent_next_pos
+
+        pack_count = []
+
+        for i in range(self.agent_num):
+            pack_count.append(0)
+            pos = self.agent_pos[i]
+            # a = action[i]
+            # if a == [0, 0]:
+            #     continue
+            if pos in self.source_pos and self.agent_city[i] == -1:  # source
+                source_idx = self.source_pos.index(pos)
+                self.agent_city[i] = self.genCity(self.city_dis)
+                self.source_reward[source_idx] += 1
+                rewards[i] += pick_drop
+            elif pos in self.hole_pos and self.agent_city[i] != -1:  # hole
+                hole_idx = self.hole_pos.index(pos)
+                self.agent_city[i] = -1
+                self.agent_reward[i] += 1
+                self.hole_reward[hole_idx] += 1
+                pack_count[-1] = 1
+                rewards[i] += pick_drop
+
+        # //////
+
 
         self.time += 1
         if self.time == self.total_time:
