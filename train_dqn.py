@@ -47,14 +47,27 @@ agent_num = 1
 # city_dis = [0.12,0.33,0.37,0.18]
 # hole_city = [0,1,1,0,2,2,3]
 # agent_num = 10
-window = 5
-nb_action = 5 + len(source_pos) + len(hole_pos)
+window = 3
+# nb_action = 5 + len(source_pos) + len(hole_pos)
+nb_action = 4
 w = config.Map.Width
 h = config.Map.Height
 agent_status = [[[0,1],[1,0],[2,0],[1,1],[0,2]],[0,1,-1,-1,-1]]
 
+# 1 is available. [right,up,left,down]. be careful to the mapping of the trans to map
+# [1,1,1,0]
+# TODO pathes here
+# trans = [[], [], [], [], [], [],
+#          [], [], [], [], [], [],
+#          [], [], [], [], [], [],
+#          [], [], [], [], [], [],
+#          [], [], [], [], [], [],
+#          [], [], [], [], [], []]
 
-env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, window)
+trans = None
+
+
+env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, window, trans=trans)
 
 # env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, window, agent_status)
 # np.random.seed(123)
@@ -112,14 +125,14 @@ testlogger = [myTestLogger()]
 # nb_actions=4
 
 dqn = DQNAgent(model=model, nb_actions=nb_action, policy=policy, memory=memory,
-               nb_steps_warmup=10000, gamma=.95, target_model_update=10000,
-               train_interval=4, delta_clip=1., test_policy=policy2, agent_num=agent_num)
+               nb_steps_warmup=1000, gamma=.95, target_model_update=10000,
+               train_interval=4, delta_clip=1., test_policy=astarPolicy, agent_num=agent_num)
 dqn.compile(Adam(lr=.00025), metrics=['mae'])
 
 if args.mode == 'train':
     # nb_step is reduced for test
-    dqn.fit(env, nb_steps=100000, log_interval=10000, verbose=2)
+    dqn.fit(env, nb_steps=1000, log_interval=10000, verbose=2)
 
     # Finally, evaluate our algorithm for 10 episodes.
     # test episodes will be visualized
-    dqn.test(env, nb_episodes=5, visualize=False, callbacks=testlogger, verbose=0)
+    dqn.test(env, nb_episodes=3, visualize=False, callbacks=testlogger, verbose=0)
