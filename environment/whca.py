@@ -153,7 +153,7 @@ class WHCA:
         min_distance = -1
         if city == -1:
             for i in range(len(self.source_pos)):
-                distance = self.getDistance(self.source_pos[i], start_pos)
+                distance = self.getDistance(start_pos, self.source_pos[i])
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.source_pos[i]
@@ -161,7 +161,7 @@ class WHCA:
             for i in range(len(self.hole_pos)):
                 if self.hole_city[i] != city:
                     continue
-                distance = self.getDistance(self.hole_pos[i], start_pos)
+                distance = self.getDistance(start_pos, self.hole_pos[i], )
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.hole_pos[i]
@@ -204,15 +204,19 @@ class WHCA:
     def get_all_distance(self):
         scale = config.Map.Width * config.Map.Height
         distance = scale * np.ones((config.Map.Width, config.Map.Height, config.Map.Width, config.Map.Height))
-        for pos in self.source_pos:
-            distance[pos[0]][pos[1]] = self.get_one_distance(pos)
-        for pos in self.hole_pos:
-            distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        # for pos in self.source_pos:
+        #     distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        # for pos in self.hole_pos:
+        #     distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        for i in range(config.Map.Width):
+            for j in range(config.Map.Height):
+                distance[i][j] = self.get_one_distance([i,j])
         return distance
 
     def getDistance(self, start, end):
-        # print end,start
-        return self.distance[end[0]][end[1]][start[0]][start[1]]
+        # print end, start
+        # print self.distance[end[0]][end[1]]
+        return self.distance[start[0]][start[1]][end[0]][end[1]]
 
     def getJointAction(self, agent_pos, agent_city, end_poses):
 
@@ -227,7 +231,6 @@ class WHCA:
                 self.removeSchedule(i)
                 if end_poses[i] == [-1, -1]:
                     end_pos = self.findEndPos(agent_city[i], i)
-                    # print end_pos
                 else:
                     end_pos = end_poses[i]
                 schedule = self.AStar(i, agent_pos[i], end_pos, agent_pos)
@@ -247,3 +250,29 @@ class WHCA:
 
         del self.reserve[0]
         return action
+
+
+def main():
+    window = 10
+    source_pos = [0, 0]
+    hole_pos = [3, 3]
+    hole_city = [0]
+    agent_num = 2
+    whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num)
+    agent_pos = [[0, 0], [0, 1]]
+    agent_city = [-1, -1]
+    end_poses = [hole_pos, hole_pos]
+
+    while agent_pos != end_poses:
+        print 'agent_pos ' + str(agent_pos)
+        action = whca.getJointAction(agent_pos, agent_city, end_poses)
+        for i in range(agent_num):
+            print whca.schedule[i]
+            agent_pos[i] = [agent_pos[i][0] + action[i][0], agent_pos[i][1] + action[i][1]]
+        for t in range(len(whca.reserve)):
+            print whca.reserve[t]
+        print 'action ' + str(action)
+
+
+if __name__ == "__main__":
+    main()
