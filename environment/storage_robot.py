@@ -66,7 +66,7 @@ class AGENT_GYM(gym.Env):
         else:
             self.trans = trans
         self.init(self.hole_pos, self.source_pos, self.agent_num)
-        self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num, [0], self.trans)
+        self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num, [0, 1], self.trans)
 
         self.steps = 0
         self.visualizer = ResultVisualizer([config.Map.Width, config.Map.Height], source_pos, hole_pos,
