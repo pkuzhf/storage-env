@@ -94,9 +94,13 @@ class ResultVisualizer:
 
         # timestep graph
         ax3 = plt.subplot2grid((3, 4), (2, 3))
-        ax3.text(0, 0.7,"Timestep: "+str(step/2), size=12, weight="light")
-        ax3.text(0, 0.5, "Pack num: " + str(sum(source_reward)), size=12, weight="light")
-        ax3.text(0, 0.3, "Reward: " + str(float(int(reward*100))/100), size=12, weight="light")
+        ax3.text(0, 0.8, "Timestep: " + str(step / 2), size=12, weight="light")
+        ax3.text(0, 0.6, "Pack num: " + str(sum(source_reward)), size=12, weight="light")
+        ax3.text(0, 0.4, "Reward: " + str(float(int(reward * 100)) / 100), size=12, weight="light")
+        if step / 2 == 0:
+            ax3.text(0, 0.2, "R/T: " + str(float(int(reward * 100)) / 100), size=12, weight="light")
+        else:
+            ax3.text(0, 0.2, "R/T: " + str(float(int(reward * 1.0 / (step / 2) * 100)) / 100), size=12, weight="light")
 
         for k in range(len(conveyors)):
             p=patches.Polygon(
