@@ -109,7 +109,7 @@ class WHCA:
             all_dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
             dirs = [[0, 0]]
             for i in range(4):
-                if self.trans[start_pos[0]][start_pos[1]][i] == 1:
+                if self.trans[pos[0]][pos[1]][i] == 1:
                     dirs.append(all_dir[i])
             for i in range(len(dirs)):
                 a = dirs[i]
