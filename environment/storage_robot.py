@@ -34,7 +34,7 @@ class AGENT_GYM(gym.Env):
         self.agent_reward = [0] * agent_num
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
-        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0], self.trans)
+        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
         # print self.agent_pos
 
 
