@@ -110,7 +110,12 @@ class WHCA:
             dirs = [[0, 0]]
             for i in range(4):
                 if self.trans[pos[0]][pos[1]][i] == 1:
-                    dirs.append(all_dir[i])
+                    cur_dir = all_dir[i]
+                    next_pos = [pos[0] + cur_dir[0], pos[1] + cur_dir[1]]
+                    if next_pos in self.hole_city and self.agent_city[agent_id]!=self.hole_city[self.hole_city.index(next_pos)] \
+                            or next_pos in self.source_pos and self.agent_city[agent_id]!=-1:
+                        continue
+                    dirs.append(cur_dir)
             for i in range(len(dirs)):
                 a = dirs[i]
                 new_pos = [pos[0] + a[0], pos[1] + a[1]]
