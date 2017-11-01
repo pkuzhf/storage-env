@@ -226,6 +226,7 @@ class WHCA:
     def getJointAction(self, agent_pos, agent_city, end_poses):
 
         self.agent_pos = agent_pos
+        self.agent_city = agent_city
 
         for i in range(self.agent_num):
             self.addReserve(0, agent_pos[i], i)
