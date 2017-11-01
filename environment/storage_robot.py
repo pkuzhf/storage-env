@@ -34,7 +34,7 @@ class AGENT_GYM(gym.Env):
         self.agent_reward = [0] * agent_num
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
-        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
+        self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0,1], self.trans)
         # print self.agent_pos
 
 
@@ -66,11 +66,11 @@ class AGENT_GYM(gym.Env):
         else:
             self.trans = trans
         self.init(self.hole_pos, self.source_pos, self.agent_num)
-        self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num, [0, 1], self.trans)
+        self.whca = WHCA(window, source_pos, hole_pos, hole_city, agent_num, [0, 1], trans=self.trans)
 
         self.steps = 0
         self.visualizer = ResultVisualizer([config.Map.Width, config.Map.Height], source_pos, hole_pos,
-                                           hole_city, city_dis, agent_num, "environment/result")
+                                           hole_city, city_dis, agent_num, "environment/result", self.trans)
 
     def EnableResultVisualizer(self):
         self.visualizer.enable = True
@@ -92,10 +92,10 @@ class AGENT_GYM(gym.Env):
     def _step(self, action):
         dir = [[1, 0], [0, 1], [-1, 0], [0, -1], [0, 0]]
 
-        rewards = [-0.2] * self.agent_num
-        hit_wall = 1
-        illegal = 1
-        pick_drop = 5
+        rewards = [-0.0] * self.agent_num
+        hit_wall = 0
+        illegal = 0
+        pick_drop = 1
 
         agent_next_pos = []
         done = [False] * len(action)
@@ -124,7 +124,11 @@ class AGENT_GYM(gym.Env):
                     rewards[i] += 0.
                 end_pos.append(self.hole_pos[action[i]-len(self.source_pos)-5])
 
+        # print end_pos
         astarAction = self.whca.getJointAction(self.agent_pos, self.agent_city, end_pos)
+        # print self.agent_pos
+        # print astarAction
+        # print
 
         self.steps += 1
 
@@ -205,7 +209,7 @@ class AGENT_GYM(gym.Env):
                 for k in range(len(line)):
                     if collision:
                         agent_next_pos[line[k]] = self.agent_pos[line[k]]
-            done[line[k]] = True
+                    done[line[k]] = True
 
         if False in done:
             print 'error: False in done'
@@ -254,9 +258,6 @@ class AGENT_GYM(gym.Env):
 
     def format_ob(self):
         formated_ob = np.zeros((self.agent_num,4,config.Map.Width,config.Map.Height,1))
-        # if self.steps>100000 and (self.steps % self.total_time) == 997:
-        #     self.whca.printTable(self.steps % self.total_time)
-        # table = self.whca.getScheduleTable4(self.steps % self.total_time)
         for i in range(self.agent_num):
             # formated_ob[i] += table
             formated_ob[i][0][self.agent_pos[i][0]][self.agent_pos[i][1]][0] = 1
