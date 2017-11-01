@@ -12,7 +12,7 @@ import imageio
 
 
 class ResultVisualizer:
-    def __init__(self,mapsize, source_pos, hole_pos, hole_city, city_dis, agent_num, directory):
+    def __init__(self,mapsize, source_pos, hole_pos, hole_city, city_dis, agent_num, directory, trans):
         self.mapsize = mapsize
         self.source_pos = source_pos
         self.hole_pos = hole_pos
@@ -20,6 +20,7 @@ class ResultVisualizer:
         self.city_dis = city_dis
         self.directory = directory
         self.enable = False
+        self.trans = trans
         if agent_num!=-1:
             self.remove_files()
 
@@ -47,6 +48,7 @@ class ResultVisualizer:
         static_info.write(str(self.source_pos) + '\n')
         static_info.write(str(self.hole_pos) + '\n')
         static_info.write(str(self.hole_city) + '\n')
+        static_info.write(str(self.trans) + '\n')
         static_info.close()
 
 
@@ -71,7 +73,7 @@ class ResultVisualizer:
         return colors
 
     def draw_map(self, mapsize, conveyors, hole_pos, hole_city, agent_pos, agent_city, colors,
-                 dir, filename, step, agent_reward, hole_reward, source_reward, city_dis, reward):
+                 dir, filename, step, agent_reward, hole_reward, source_reward, city_dis, reward, trans):
         fig = plt.figure()
 
         # fontsize for texts
@@ -141,6 +143,25 @@ class ResultVisualizer:
                     size=fontsize, weight="light", alpha=0.85)
             ax.add_patch(p)
 
+        for i in range(mapsize[0]):
+            for j in range(mapsize[1]):
+                if trans[i][j][0]==1:
+                    p = patches.Arrow(i + 0.8, j + 0.5, 0.15, 0., 0.15, facecolor=(0.3, 0.3, 0.3),
+                        linewidth=0.01, linestyle='solid')
+                    ax.add_patch(p)
+                if trans[i][j][1]==1:
+                    p = patches.Arrow(i + 0.5, j + 0.8, 0., 0.15, 0.15, facecolor=(0.3, 0.3, 0.3),
+                        linewidth=0.01, linestyle='solid')
+                    ax.add_patch(p)
+                if trans[i][j][2]==1:
+                    p = patches.Arrow(i + 0.2, j + 0.5, -0.15, 0., 0.15, facecolor=(0.3, 0.3, 0.3),
+                        linewidth=0.01, linestyle='solid')
+                    ax.add_patch(p)
+                if trans[i][j][3]==1:
+                    p = patches.Arrow(i + 0.5, j + 0.2, 0., -0.15, 0.15, facecolor=(0.3, 0.3, 0.3),
+                        linewidth=0.01, linestyle='solid')
+                    ax.add_patch(p)
+
         # set ticks and spines
         ax.set_xticks(np.arange(0, mapsize[0]+1, 1))
         ax.set_xticklabels(())
@@ -195,6 +216,7 @@ class ResultVisualizer:
         source_pos = eval(log.readline())
         hole_pos = eval(log.readline())
         hole_city = eval(log.readline())
+        trans = eval(log.readline())
         colors = self.randomcolor(len(city_dis))
         colors[len(city_dis)] = [0.9, 0.9, 0.9]
         log.close()
@@ -210,7 +232,8 @@ class ResultVisualizer:
             agent_city = eval(log.readline())
             reward = eval(log.readline())
             self.draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
-                     self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis, reward)
+                     self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward,
+                     city_dis, reward, trans)
 
             # old_agent_reward = agent_reward
             # old_source_reward = source_reward
@@ -218,7 +241,7 @@ class ResultVisualizer:
             old_agent_pos = agent_pos
             # old_agent_city = agent_city
 
-            for j in range(199):
+            for j in range(99):
                 step += 1
                 agent_reward = eval(log.readline())
                 source_reward = eval(log.readline())
@@ -230,15 +253,17 @@ class ResultVisualizer:
                     old_agent_pos[i][0] = (agent_pos[i][0] + old_agent_pos[i][0]) / 2.0
                     old_agent_pos[i][1] = (agent_pos[i][1] + old_agent_pos[i][1]) / 2.0
                 self.draw_map(mapsize, source_pos, hole_pos, hole_city, old_agent_pos, agent_city, colors,
-                              self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis, reward)
+                              self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward,
+                              city_dis, reward, trans)
                 step += 1
                 old_agent_pos = agent_pos
                 self.draw_map(mapsize, source_pos, hole_pos, hole_city, agent_pos, agent_city, colors,
-                              self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward, city_dis,reward)
+                              self.directory+"/pics/"+file, "demo", step, agent_reward, hole_reward, source_reward,
+                              city_dis, reward, trans)
 
             log.close()
             try:
-                self.save_mp4(self.directory+"/pics/"+file, "demo", 399)
+                self.save_mp4(self.directory+"/pics/"+file, "demo", 199)
             except:
                 pass
 
