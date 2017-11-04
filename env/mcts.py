@@ -7,7 +7,8 @@ import numpy as np
 import config
 
 # MCTS scalar.  Larger scalar will increase exploitation, smaller will increase exploration.
-SCALAR = 1 / math.sqrt(2.0)
+# SCALAR = 1 / math.sqrt(2.0)
+SCALAR = 1
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger('MyLogger')
@@ -30,7 +31,7 @@ def choose(seq):
 
 
 class State:
-    NUM_TURNS = config.Map.Width * config.Map.Width
+    NUM_TURNS = config.Map.Width * config.Map.Height
     ACTIONS = [i for i in range(14)]
     MAX_VALUE = 1000
     num_moves = 14

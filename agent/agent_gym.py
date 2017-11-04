@@ -29,7 +29,8 @@ class AGENT_GYM(gym.Env):
         self.agent_reward = [0] * agent_num
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
-        if not self.no_astar:
+        self.end_count = 0
+        if self.astar:
             self.window = 5
             self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
 
@@ -46,7 +47,7 @@ class AGENT_GYM(gym.Env):
         self.hole_city = hole_city
         self.agent_num = agent_num
         self.city_dis = city_dis
-        self.no_astar = no_astar  # default is use astar
+        self.astar = not no_astar  # default is use astar
 
         if trans is None:
             self.trans = np.zeros((config.Map.Width, config.Map.Height, 4))
@@ -57,11 +58,14 @@ class AGENT_GYM(gym.Env):
 
         self.steps = 0
         self.visualizer = ResultVisualizer([config.Map.Width, config.Map.Height], source_pos, hole_pos,
-                                           hole_city, city_dis, agent_num, "pics/result")
+                                           hole_city, city_dis, agent_num, "result", self.trans)
 
     def EnableResultVisualizer(self):
         self.visualizer.enable = True
         self.visualizer.wirte_static_info()
+
+    def DisableResultVisualizer(self):
+        self.visualizer.enable = False
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -77,13 +81,13 @@ class AGENT_GYM(gym.Env):
     def _step(self, action):
         dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 
-        rewards = [-0.2]*self.agent_num
+        rewards = [-0.1]*self.agent_num
         hit_wall = 1
         illegal = 1
-        pick_drop = 5
+        pick_drop = 10
 
         agent_next_pos = []
-        if not self.no_astar:
+        if self.astar:
             astar_action = self.whca.getJointAction(self.agent_pos, self.agent_city, [[-1,-1]]*len(action))
 
         done = [False] * len(action)
@@ -93,13 +97,19 @@ class AGENT_GYM(gym.Env):
         # invalid
         for i in range(self.agent_num):
             pos = self.agent_pos[i]
-            if self.no_astar:
+            if self.astar:
+                a = astar_action[i]
+            else:
                 a = dir[action[i]]
                 if self.trans[self.agent_pos[i][0]][self.agent_pos[i][1]][action[i]] == 0:
                     rewards[i] -= illegal
-            else:
-                a = astar_action[i]
-            next_pos = [pos[0] + a[0], pos[1] + a[1]]
+            try:
+                next_pos = [pos[0] + a[0], pos[1] + a[1]]
+            except:
+                print astar_action
+                print i
+                print a
+                assert 0
             if next_pos not in agent_next_pos:
                 agent_next_pos.append(next_pos)
             else:
@@ -132,9 +142,6 @@ class AGENT_GYM(gym.Env):
             if len(circle) > 0 and j == circle[0]:
                 if len(circle) == 1:
                     print 'error: len(circle) == 1'
-                    print self.agent_pos
-                    print agent_next_pos
-                    print done
                 if len(circle) == 2:
                     agent_next_pos[circle[0]] = self.agent_pos[circle[0]]
                     agent_next_pos[circle[1]] = self.agent_pos[circle[1]]
@@ -153,7 +160,7 @@ class AGENT_GYM(gym.Env):
             while not done[j] and agent_next_pos[j] in self.agent_pos:
                 if j in line:
                     print 'error: duplicate in line'
-                    print i,j
+                    print i, j
                     print line
                     print self.agent_pos
                     print agent_next_pos
@@ -162,15 +169,15 @@ class AGENT_GYM(gym.Env):
                 j = self.agent_pos.index(agent_next_pos[j])
             if not done[j]:
                 line.append(j)
-			collision = False
-			for k in range(self.agent_num):
-				if done[k] and agent_next_pos[k] == agent_next_pos[j]:
-					collision = True
-					break
-			for k in range(len(line)):
-				if collision:
-					agent_next_pos[line[k]] = self.agent_pos[line[k]]
-				done[line[k]] = True
+            collision = False
+            for k in range(self.agent_num):
+                if done[k] and agent_next_pos[k] == agent_next_pos[j]:
+                    collision = True
+                    break
+            for k in range(len(line)):
+                if collision:
+                    agent_next_pos[line[k]] = self.agent_pos[line[k]]
+                done[line[k]] = True
 
         if False in done:
             print 'error: False in done'
@@ -188,12 +195,12 @@ class AGENT_GYM(gym.Env):
             # a = action[i]
             # if a == [0, 0]:
             #     continue
-            if pos in self.source_pos and self.agent_city[i]==-1:  # source
+            if pos in self.source_pos and self.agent_city[i] == -1:  # source
                 source_idx = self.source_pos.index(pos)
                 self.agent_city[i] = self.genCity(self.city_dis)
                 self.source_reward[source_idx] += 1
                 rewards[i] += pick_drop
-            elif pos in self.hole_pos and self.agent_city[i]!=-1:  # hole
+            elif pos in self.hole_pos and self.agent_city[i] != -1:  # hole
                 hole_idx = self.hole_pos.index(pos)
                 self.agent_city[i] = -1
                 self.agent_reward[i] += 1
@@ -201,8 +208,12 @@ class AGENT_GYM(gym.Env):
                 pack_count[-1] = 1
                 rewards[i] += pick_drop
 
+        for r0 in rewards:
+            if r0 > 0:
+                self.end_count = 0
+        self.end_count += 1
         self.time += 1
-        if self.time == self.total_time:
+        if self.time == self.total_time or self.end_count == 25:
             done = True
         else:
             done = False

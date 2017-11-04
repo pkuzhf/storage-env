@@ -245,6 +245,7 @@ class DDPGAgent(Agent):
         self.recent_observation = observation
         self.recent_action = np.zeros((14,))
         self.recent_action[action] = 1
+        # self.recent_action = action
 
         return action
 

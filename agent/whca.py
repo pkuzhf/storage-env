@@ -109,8 +109,14 @@ class WHCA:
             all_dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
             dirs = [[0, 0]]
             for i in range(4):
-                if self.trans[start_pos[0]][start_pos[1]][i] == 1:
-                    dirs.append(all_dir[i])
+                if self.trans[pos[0]][pos[1]][i] == 1:
+                    cur_dir = all_dir[i]
+                    next_pos = [pos[0] + cur_dir[0], pos[1] + cur_dir[1]]
+                    if next_pos in self.hole_city and self.agent_city[agent_id] != self.hole_city[
+                        self.hole_city.index(next_pos)] \
+                            or next_pos in self.source_pos and self.agent_city[agent_id] != -1:
+                        continue
+                    dirs.append(cur_dir)
             for i in range(len(dirs)):
                 a = dirs[i]
                 new_pos = [pos[0] + a[0], pos[1] + a[1]]
@@ -153,7 +159,7 @@ class WHCA:
         min_distance = -1
         if city == -1:
             for i in range(len(self.source_pos)):
-                distance = self.getDistance(self.source_pos[i], start_pos)
+                distance = self.getDistance(start_pos, self.source_pos[i])
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.source_pos[i]
@@ -161,7 +167,7 @@ class WHCA:
             for i in range(len(self.hole_pos)):
                 if self.hole_city[i] != city:
                     continue
-                distance = self.getDistance(self.hole_pos[i], start_pos)
+                distance = self.getDistance(start_pos, self.hole_pos[i])
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.hole_pos[i]
@@ -204,18 +210,24 @@ class WHCA:
     def get_all_distance(self):
         scale = config.Map.Width * config.Map.Height
         distance = scale * np.ones((config.Map.Width, config.Map.Height, config.Map.Width, config.Map.Height))
-        for pos in self.source_pos:
-            distance[pos[0]][pos[1]] = self.get_one_distance(pos)
-        for pos in self.hole_pos:
-            distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        # for pos in self.source_pos:
+        #     distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        # for pos in self.hole_pos:
+        #     distance[pos[0]][pos[1]] = self.get_one_distance(pos)
+        for i in range(config.Map.Width):
+            for j in range(config.Map.Height):
+                distance[i][j] = self.get_one_distance([i,j])
         return distance
 
-    def getDistance(self, end, start):
-        return self.distance[end[0]][end[1]][start[0]][start[1]]
+    def getDistance(self, start, end):
+        # print end, start
+        # print self.distance[end[0]][end[1]]
+        return self.distance[start[0]][start[1]][end[0]][end[1]]
 
     def getJointAction(self, agent_pos, agent_city, end_poses):
 
         self.agent_pos = agent_pos
+        self.agent_city = agent_city
 
         for i in range(self.agent_num):
             self.addReserve(0, agent_pos[i], i)

@@ -57,3 +57,27 @@ def get_env_critic_net():
     print(env_model_critic.summary())
     return env_model_critic, action
 
+
+def get_env_net():
+
+    n = config.Map.Height
+    m = config.Map.Width
+    d = 7
+
+    observation = Input(shape=(1, m, n, d), name='observation_input_actor')
+    x = Reshape((m*n, d))(observation)
+    x = Masking(mask_value=-1)(x)
+
+    x = LSTM(4, dropout=0.2, recurrent_dropout=0.2)(x)
+
+    x = Dense(32)(x)
+    x = Activation(activation='relu')(x)
+    x = Dense(32)(x)
+    x = Activation(activation='relu')(x)
+    q_values = Dense(14)(x)
+
+    env_model_actor = Model(inputs=observation, outputs=q_values, name='env_actor')
+
+    print('env model:')
+    print(env_model_actor.summary())
+    return env_model_actor

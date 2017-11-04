@@ -1,4 +1,4 @@
-import copy
+import copy, time
 from collections import deque
 
 import gym
@@ -35,6 +35,7 @@ class ENV_GYM(gym.Env):
         self.conflict_count = 0
         self.max_reward = -1e20
         self.reward_his = deque(maxlen=1000)
+        self.episode_count = 0
 
         self.used_agent = False
 
@@ -43,40 +44,70 @@ class ENV_GYM(gym.Env):
         self.actions_to_paths = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
                         [1,1,0,0],[1,0,1,0],[1,0,0,1],[0,1,1,0],[0,1,0,1],[0,0,1,1],
                         [1,1,1,0],[1,1,0,1],[1,0,1,1],[0,1,1,1]])
+        self.start_time = time.time()
 
     def _reset(self):
         self.gamestep = 0
         self.invalid_count = 0
         self.conflict_count = 0
-        self.pathes = -np.ones([config.Map.Width, config.Map.Height, 4], dtype=np.int64)
-        return self.pathes
+        self.pathes = -np.ones([config.Map.Width, config.Map.Height, 4], dtype=np.int32)
+        self.grid_type = -np.ones([config.Map.Width, config.Map.Height, 3], dtype=np.int32)
+        self.episode_count += 1
+        self.grid_type[0][0] = np.zeros((3, ))
+        if [0,0] in config.Map.source_pos:
+            self.grid_type[0][0][1] = 1
+        elif [0,0] in config.Map.hole_pos:
+            self.grid_type[0][0][2] = 1
+        else:
+            self.grid_type[0][0][0] = 1
+        return np.concatenate((self.pathes, self.grid_type), axis=2)
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def _step(self, action):
-        print "action:", action
+        # print "action:", action
         done = (self.gamestep == config.Map.Width*config.Map.Height-1)
+        current_x = self.gamestep/config.Map.Height
+        current_y = self.gamestep%config.Map.Height
+        self.pathes[current_x][current_y] = self.actions_to_paths[action]
 
-        self.pathes[self.gamestep/config.Map.Width][self.gamestep%config.Map.Height] = self.actions_to_paths[action]
+        self.gamestep += 1
+        if not done:
+            current_x = self.gamestep/config.Map.Height
+            current_y = self.gamestep%config.Map.Height
+            self.grid_type[current_x][current_y] = np.zeros((3, ))
+            if [current_x,current_y] in config.Map.source_pos:
+                self.grid_type[current_x][current_y][1] = 1
+            elif [current_x,current_y] in config.Map.hole_pos:
+                self.grid_type[current_x][current_y][2] = 1
+            else:
+                self.grid_type[current_x][current_y][0] = 1
 
         if done:
             pathes = copy.deepcopy(self.pathes)
             reward = self._get_reward_from_agent(pathes)
         else:
             # MCTS reward
+            # print self.pathes
             target_node = self.mcts.SEARCHNODE(self.pathes)
-            print "step: ", target_node.state.step
+            # print target_node.state.moves
+            # print "step: ", target_node.state.step
             end_node = self.mcts.TREEPOLICYEND(target_node)
             pathes = self.mcts.MOVETOPATH(end_node.state)
             reward = self._get_reward_from_agent(pathes)
+            if reward > 50:
+                print pathes
             self.mcts.BACKUP(end_node, reward)
+            reward += target_node.reward / target_node.visits
             # reward = 0
 
-        self.gamestep += 1
 
-        return self.pathes, reward, done, {}
+        print "total time:", (time.time()-self.start_time)/60
+        print "env reward:", reward
+
+        return np.concatenate((self.pathes, self.grid_type),axis=2), reward, done, {}
 
     def _get_reward_from_agent(self, mazemap):
         # TODO maybe could check valid map here
@@ -98,9 +129,21 @@ class ENV_GYM(gym.Env):
             bonus += 5
             testlogger = [myTestLogger()]
             self.agent.test_reward_his.clear()
-            print mazemap
+            # print mazemap
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
-            return np.mean(self.agent.test_reward_his)/50
+                if self.episode_count % 36 == 0:
+                    self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
+                else:
+                    self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
+            return np.mean(self.agent.test_reward_his)/20
+
+    def best_by_tree(self):
+        end_node = self.mcts.TREEPOLICYEND(self.mcts.root)
+        pathes = self.mcts.MOVETOPATH(end_node.state)
+        reward = self._get_reward_from_agent(pathes)
+        print "###############################################"
+        print pathes
+        print "tree got the reward:", reward
+        print "###############################################"

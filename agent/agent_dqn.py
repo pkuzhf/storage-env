@@ -392,7 +392,7 @@ class DQNAgent(AbstractDQNAgent):
 
         self.training = False
         self.step = 0
-        # env.EnableResultVisualizer()
+        env.EnableResultVisualizer()
 
         if verbose >= 1:
             callbacks += [TestLogger()]
@@ -446,6 +446,7 @@ class DQNAgent(AbstractDQNAgent):
                         observation, r, d, info = self.processor.process_step(observation, r, d, info)
                     callbacks.on_action_end(action)
                     reward += r
+
                     for key, value in info.items():
                         if not np.isreal(value):
                             continue
@@ -476,6 +477,9 @@ class DQNAgent(AbstractDQNAgent):
             # resetting the environment. We need to pass in `terminal=False` here since
             # the *next* state, that is the state of the newly reset environment, is
             # always non-terminal by convention.
+            if episode_step < 999:
+                episode_reward -= 24 * np.ones((self.agent_num, ))
+
             self.test_reward_his.append(episode_reward)
             self.forward(observation)
             self.backward(0., terminal=False)
@@ -489,7 +493,8 @@ class DQNAgent(AbstractDQNAgent):
 
         callbacks.on_train_end()
         self._on_test_end()
-        # env.visualizer.draw_log()
+        if verbose == -1:
+            env.visualizer.draw_log()
 
         return history
 
@@ -502,6 +507,8 @@ class DQNAgent(AbstractDQNAgent):
             raise ValueError('action_repetition must be >= 1, is {}'.format(action_repetition))
 
         self.training = True
+
+        env.DisableResultVisualizer()
 
         callbacks = [] if not callbacks else callbacks[:]
 
