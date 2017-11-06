@@ -191,7 +191,7 @@ class ResultVisualizer:
 
         # plt.show()
         if not os.path.exists(dir):
-            os.mkdir(dir)
+            os.makedirs(dir)
         fig.savefig(dir + '/' + filename + str(step) + '.png', dpi=100, bbox_inches='tight')
         plt.close(fig)
 
