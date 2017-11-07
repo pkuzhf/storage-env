@@ -19,10 +19,12 @@ def decode(m):
 
 
 class WHCA:
-    def setSchedule(self, agent_id, schedule):
+    def addSchedule(self, agent_id, schedule):
         for [start_pos, action] in schedule:
             time = len(self.schedule[agent_id])
             self.addReserve(time, start_pos, agent_id)
+            if len(self.schedule[agent_id]) > 0 and self.schedule[agent_id][-1][1] == None:
+                break
             self.schedule[agent_id].append([start_pos, action])
 
     def removeSchedule(self, agent_id):
@@ -32,7 +34,7 @@ class WHCA:
             entry = encode(start_pos)
             for i in self.reserve_interval:
                 t = time + i
-                if entry in self.reserve[t]:
+                if t >= 0 and entry in self.reserve[t] and self.reserve[t][entry][0] == agent_id:
                     del self.reserve[t][entry]
         self.schedule[agent_id] = []
 
@@ -52,7 +54,7 @@ class WHCA:
                     schedule = []
                     schedule.append([self.agent_pos[reserved_agent_id], [0, 0]])
                     schedule.append([self.agent_pos[reserved_agent_id], None])
-                    self.setSchedule(reserved_agent_id, schedule)
+                    self.addSchedule(reserved_agent_id, schedule)
             self.reserve[t][entry] = [agent_id, time]
 
     def getScheduleTable(self, total_time_step):
@@ -152,6 +154,9 @@ class WHCA:
         # print ['start_pos', start_pos, 'end_pos', end_pos]
         # print ['schedule', schedule]
         # print 'End self.AStar'
+        if len(schedule) == 1:
+            print 'schedule length = 1'
+            print schedule
         return schedule
 
     def findEndPos(self, city, agent_id):
@@ -241,7 +246,7 @@ class WHCA:
                 else:
                     end_pos = end_poses[i]
                 schedule = self.AStar(i, agent_pos[i], end_pos, agent_pos)
-                self.setSchedule(i, schedule)
+                self.addSchedule(i, schedule)
             if self.schedule[i][0][0] != agent_pos[i]:
                 print 'unexpected agent pos'
                 print i
@@ -249,12 +254,12 @@ class WHCA:
                 print agent_pos[i]
             # print ['schedule', self.schedule[i]]
 
+        
         action = []
         for i in range(self.agent_num):
             [pos, a] = self.schedule[i][0]
             del self.schedule[i][0]
             action.append(a)
-
         del self.reserve[0]
         return action
 
