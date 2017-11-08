@@ -494,7 +494,10 @@ class DQNAgent(AbstractDQNAgent):
         callbacks.on_train_end()
         self._on_test_end()
         if verbose == -1:
-            env.visualizer.draw_log()
+            try:
+                env.visualizer.draw_log(99)
+            except:
+                env.visualizer.draw_log(10)
 
         return history
 
