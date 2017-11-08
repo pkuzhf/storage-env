@@ -210,7 +210,7 @@ class ResultVisualizer:
                 image = imageio.imread(dir+'/'+filename+str(i)+'.png')
                 writer.append_data(image)
 
-    def draw_log(self):
+    def draw_log(self, pic_nb=99):
         self.draw_reward()
 
         log = open(self.directory + '/static_info', 'r')
@@ -244,7 +244,7 @@ class ResultVisualizer:
             old_agent_pos = agent_pos
             # old_agent_city = agent_city
 
-            for j in range(99):
+            for j in range(pic_nb):
                 step += 1
                 agent_reward = eval(log.readline())
                 source_reward = eval(log.readline())
@@ -266,7 +266,7 @@ class ResultVisualizer:
 
             log.close()
             try:
-                self.save_mp4(self.directory+"/pics/"+file, "demo", 199)
+                self.save_mp4(self.directory+"/pics/"+file, "demo", 2 * pic_nb + 1)
             except:
                 pass
 
