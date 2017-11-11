@@ -63,6 +63,8 @@ class AbstractDQNAgent(Agent):
         # State.
         self.compiled = False
 
+        self.last_ob = None
+
     def process_state_batch(self, batch):
         batch = np.array(batch)
         if self.processor is None:
@@ -484,6 +486,8 @@ class DQNAgent(AbstractDQNAgent):
             self.forward(observation)
             self.backward(0., terminal=False)
 
+            self.last_ob = observation
+
             # Report end of episode.
             episode_logs = {
                 'episode_reward': episode_reward,
@@ -494,7 +498,10 @@ class DQNAgent(AbstractDQNAgent):
         callbacks.on_train_end()
         self._on_test_end()
         if verbose == -1:
-            env.visualizer.draw_log()
+            try:
+                env.visualizer.draw_log(99)
+            except:
+                env.visualizer.draw_log(10)
 
         return history
 

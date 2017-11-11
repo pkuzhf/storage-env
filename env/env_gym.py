@@ -35,7 +35,7 @@ class ENV_GYM(gym.Env):
         self.conflict_count = 0
         self.max_reward = -1e20
         self.reward_his = deque(maxlen=1000)
-        self.episode_count = 0
+        self.step_count = 0
 
         self.used_agent = False
 
@@ -52,7 +52,6 @@ class ENV_GYM(gym.Env):
         self.conflict_count = 0
         self.pathes = -np.ones([config.Map.Width, config.Map.Height, 4], dtype=np.int32)
         self.grid_type = -np.ones([config.Map.Width, config.Map.Height, 3], dtype=np.int32)
-        self.episode_count += 1
         self.grid_type[0][0] = np.zeros((3, ))
         if [0,0] in config.Map.source_pos:
             self.grid_type[0][0][1] = 1
@@ -73,6 +72,7 @@ class ENV_GYM(gym.Env):
         current_y = self.gamestep%config.Map.Height
         self.pathes[current_x][current_y] = self.actions_to_paths[action]
 
+        self.step_count += 1
         self.gamestep += 1
         if not done:
             current_x = self.gamestep/config.Map.Height
@@ -97,10 +97,10 @@ class ENV_GYM(gym.Env):
             end_node = self.mcts.TREEPOLICYEND(target_node)
             pathes = self.mcts.MOVETOPATH(end_node.state)
             reward = self._get_reward_from_agent(pathes)
-            if reward > 50:
+            if reward > 20:
                 print pathes
             self.mcts.BACKUP(end_node, reward)
-            reward += target_node.reward / target_node.visits
+            reward += 0.25 * target_node.reward / target_node.visits
             # reward = 0
 
 
@@ -133,7 +133,7 @@ class ENV_GYM(gym.Env):
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                if self.episode_count % 36 == 0:
+                if self.step_count % (36 * 20) == 0:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
                 else:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)

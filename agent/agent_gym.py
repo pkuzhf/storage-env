@@ -226,7 +226,7 @@ class AGENT_GYM(gym.Env):
         # return [self.agent_pos, self.agent_city, self.agent_reward, self.hole_reward, self.source_reward], rewards, done, {}
 
     def format_ob(self):
-        formated_ob = np.zeros((self.agent_num, 4, config.Map.Width, config.Map.Height, 1))
+        formated_ob = np.zeros((self.agent_num, 4, config.Map.Width, config.Map.Height, 1), dtype=np.int32)
         for i in range(self.agent_num):
             formated_ob[i][0][self.agent_pos[i][0]][self.agent_pos[i][1]][0] = 1
             # end
