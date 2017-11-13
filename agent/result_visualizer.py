@@ -211,7 +211,7 @@ class ResultVisualizer:
                 writer.append_data(image)
 
     def draw_log(self, pic_nb=99):
-        self.draw_reward()
+        # self.draw_reward()
 
         log = open(self.directory + '/static_info', 'r')
         mapsize = eval(log.readline())
