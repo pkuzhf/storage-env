@@ -27,6 +27,10 @@ class pgAgent():
         self.ob = None
         self.r = None
 
+        self.true_ob_shape = []
+        for d in self.ob_shape:
+            self.true_ob_shape.append(d)
+
     def fit(self, nb_steps):
         observation = self.env.reset()
         for i in range(self.nb_warm_up):
@@ -42,7 +46,7 @@ class pgAgent():
             self.save_memory(self.ob, action, self.r, done)
             batch_ob, batch_action, batch_reward = self.sample_memory(32)
             self.sess.run(self.train_op, feed_dict={
-                self.tf_obs: np.vstack(batch_ob),  # shape=[None, n_obs]
+                self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
                 self.tf_acts: np.array(batch_action),  # shape=[None, ]
                 self.tf_vt: batch_reward,  # shape=[None, ]
             })
@@ -73,7 +77,7 @@ class pgAgent():
             del self.memory[0]
 
     def sample_memory(self, batch_size):
-        batch_ob = np.zeros((batch_size, self.ob_shape))
+        batch_ob = np.zeros([batch_size] + self.true_ob_shape)
         batch_action = np.zeros((batch_size, ))
         batch_reward = np.zeros((batch_size, ))
         for i in range(batch_size):
@@ -96,16 +100,40 @@ class pgAgent():
             self.tf_obs = tf.placeholder(tf.float32, true_ob_shape, name="observations")
             self.tf_acts = tf.placeholder(tf.int32, [None, ], name="actions_num")
             self.tf_vt = tf.placeholder(tf.float32, [None, ], name="actions_value")
+
+        trans_ob = tf.transpose(self.tf_obs, [0,3,1,2])
+        reshape_ob = tf.reshape(trans_ob,[-1,config.Map.Width,config.Map.Width,1])
+
+        # conv1
+        conv1 = tf.layers.conv2d(
+            inputs=reshape_ob,
+            filters=32,
+            padding="SAME",
+            kernel_size=[3, 3],
+            activation=tf.nn.relu
+        )
+
+        # conv2
+        conv2 = tf.layers.conv2d(
+            inputs=conv1,
+            filters=32,
+            padding="SAME",
+            kernel_size=[3, 3],
+            activation=tf.nn.relu
+        )
+
+        reshape_conv2 = tf.reshape(conv2, [-1, 8, config.Map.Width, config.Map.Width, 32])
+
         # fc1
         layer = tf.layers.dense(
-            inputs=self.tf_obs,
+            inputs=reshape_conv2,
             units=10,
-            activation=tf.nn.tanh,  # tanh activation
+            activation=tf.nn.relu,  # tanh activation
             kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.3),
             bias_initializer=tf.constant_initializer(0.1),
             name='fc1'
         )
-        flat_layer = tf.reshape(layer, [-1, config.Map.Width*config.Map.Height*10])
+        flat_layer = tf.reshape(layer, [-1, 8 * config.Map.Width*config.Map.Height * 10])
         # fc2
         all_act = tf.layers.dense(
             inputs=flat_layer,
