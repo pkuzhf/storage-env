@@ -4,7 +4,7 @@ import random
 import config
 
 class pgAgent():
-    def __init__(self, env, nb_action, nb_warm_up, policy, testPolicy, gamma, lr, memory_limit, batchsize):
+    def __init__(self, env, nb_action, nb_warm_up, policy, testPolicy, gamma, lr, memory_limit, batchsize, train_interval):
         np.random.seed(1)
         tf.set_random_seed(1)
 
@@ -19,6 +19,7 @@ class pgAgent():
         self.memory_limit = memory_limit
         self.nb_warm_up = nb_warm_up
         self.batch_size = batchsize
+        self.train_interval = train_interval
 
         self.get_net()
         self.sess = tf.Session()
@@ -41,16 +42,18 @@ class pgAgent():
                 observation = self.env.reset()
 
         for i in range(nb_steps):
+            print "train step:", i
             action = self.get_action(observation)
             self.ob, self.r, done, info = self.env.step(action)
             self.save_memory(self.ob, action, self.r, done)
-            batch_ob, batch_action, batch_reward = self.sample_memory(32)
-            self.sess.run(self.train_op, feed_dict={
-                self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
-                self.tf_acts: np.array(batch_action),  # shape=[None, ]
-                self.tf_vt: batch_reward,  # shape=[None, ]
-            })
-            print "mean reward: ", np.mean(batch_reward)
+            if i % self.train_interval == 0:
+                batch_ob, batch_action, batch_reward = self.sample_memory(32)
+                self.sess.run(self.train_op, feed_dict={
+                    self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
+                    self.tf_acts: np.array(batch_action),  # shape=[None, ]
+                    self.tf_vt: batch_reward,  # shape=[None, ]
+                })
+                print "mean reward: ", np.mean(batch_reward)
 
     def test(self):
         observation = self.env.reset()
@@ -89,6 +92,8 @@ class pgAgent():
                 if self.memory[index+j][3]:
                     batch_reward[i] = 0
                 batch_reward[i] = batch_reward[i] * self.gamma + self.memory[index+j][2]
+        print batch_action
+        print batch_reward
         return batch_ob, batch_action, batch_reward
 
     def get_net(self):
