@@ -47,7 +47,7 @@ class pgAgent():
             self.ob, self.r, done, info = self.env.step(action)
             self.save_memory(self.ob, action, self.r, done)
             if i % self.train_interval == 0:
-                batch_ob, batch_action, batch_reward = self.sample_memory(32)
+                batch_ob, batch_action, batch_reward = self.sample_memory(self.batch_size)
                 self.sess.run(self.train_op, feed_dict={
                     self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
                     self.tf_acts: np.array(batch_action),  # shape=[None, ]
