@@ -296,6 +296,6 @@ class GreedyQPolicy2D(Policy):
 class MultiDisPolicy(Policy):
     def select_action(self, q_values):
         # print "distribution", q_values
-        while np.sum(q_values) > 1 - 1e-9:
+        while np.sum(q_values) > 1 - 1e-8:
             q_values /= (1 + 1e-5)
         return np.random.multinomial(1, q_values, size=1).tolist()[0].index(1)
