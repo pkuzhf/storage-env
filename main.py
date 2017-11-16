@@ -48,8 +48,8 @@ def main():
     # ---------------------------------------------------------------------------
     env_gym = ENV_PG_GYM()
     env_gym.seed(config.Game.Seed)
-    env = EnvPG(env_gym, nb_action=config.Map.Width*config.Map.Height*14, nb_warm_up=1000, policy=MultiDisPolicy(),
-                testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=3000, batchsize=32, train_interval=16)
+    env = EnvPG(env_gym, nb_action=config.Map.Width*config.Map.Height*4, nb_warm_up=1000, policy=MultiDisPolicy(),
+                testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=3000, batchsize=32, train_interval=8)
 
     # agent part
     # ---------------------------------------------------------------------------

@@ -35,6 +35,7 @@ class pgAgent():
     def fit(self, nb_steps):
         observation = self.env.reset()
         for i in range(self.nb_warm_up):
+            print "warm up step:", i
             action = self.get_action(observation)
             self.ob, self.r, done, info = self.env.step(action)
             self.save_memory(self.ob, action, self.r, done)
@@ -83,17 +84,20 @@ class pgAgent():
         batch_ob = np.zeros([batch_size] + self.true_ob_shape)
         batch_action = np.zeros((batch_size, ))
         batch_reward = np.zeros((batch_size, ))
+        # batch_reward = -np.ones((batch_size, ))
         for i in range(batch_size):
-            index = random.randint(0,len(self.memory)-10)
+            index = random.randint(0, len(self.memory)-1)
+            # index = -1
             batch_ob[i] = self.memory[index][0]
             batch_action[i] = self.memory[index][1]
-            for j in range(9, -1, -1):
-                # discount reward
-                if self.memory[index+j][3]:
-                    batch_reward[i] = 0
-                batch_reward[i] = batch_reward[i] * self.gamma + self.memory[index+j][2]
-        print batch_action
-        print batch_reward
+            batch_reward[i] = self.memory[index][2]
+            # for j in range(9, -1, -1):
+            #     # discount reward
+            #     if self.memory[index+j][3]:
+            #         batch_reward[i] = 0
+            #     batch_reward[i] = batch_reward[i] * self.gamma + self.memory[index+j][2]
+        # print batch_action
+        # print batch_reward
         return batch_ob, batch_action, batch_reward
 
     def get_net(self):
@@ -107,7 +111,7 @@ class pgAgent():
             self.tf_vt = tf.placeholder(tf.float32, [None, ], name="actions_value")
 
         trans_ob = tf.transpose(self.tf_obs, [0,3,1,2])
-        reshape_ob = tf.reshape(trans_ob,[-1,config.Map.Width,config.Map.Width,1])
+        reshape_ob = tf.reshape(trans_ob,[-1,config.Map.Width,config.Map.Height,1])
 
         # conv1
         conv1 = tf.layers.conv2d(
@@ -127,7 +131,7 @@ class pgAgent():
             activation=tf.nn.relu
         )
 
-        reshape_conv2 = tf.reshape(conv2, [-1, 8, config.Map.Width, config.Map.Width, 32])
+        reshape_conv2 = tf.reshape(conv2, [-1, 4, config.Map.Width, config.Map.Height, 32])
 
         # fc1
         layer = tf.layers.dense(
@@ -138,7 +142,7 @@ class pgAgent():
             bias_initializer=tf.constant_initializer(0.1),
             name='fc1'
         )
-        flat_layer = tf.reshape(layer, [-1, 8 * config.Map.Width*config.Map.Height * 10])
+        flat_layer = tf.reshape(layer, [-1, 4 * config.Map.Width*config.Map.Height * 10])
         # fc2
         all_act = tf.layers.dense(
             inputs=flat_layer,

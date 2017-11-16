@@ -2,8 +2,8 @@ class Game:
     Seed = 1234567
     MaxGameStep = 200
     AgentAction = 4
-    AgentNum = 5
-    total_time = 1000
+    AgentNum = 1
+    total_time = 100
 
 class Map:
     # Height = 6
@@ -12,16 +12,16 @@ class Map:
     # hole_pos = [[2,2],[2,3],[3,2],[3,3]]
     # city_dis = [0.25,0.25,0.25,0.25]
     # hole_city = [0,1,2,3]
-    source_pos = [[0, 3], [2, 0], [5, 2], [3, 5]]
-    hole_pos = [[2, 2], [2, 3], [3, 2], [3, 3]]
-    city_dis = [0.25, 0.25, 0.25, 0.25]
-    hole_city = [0, 1, 2, 3]
-    Height = 6
-    Width = 6
-    # source_pos = [[0, 0]]
-    # hole_pos = [[4, 1]]
-    # city_dis = [1]
-    # hole_city = [0]
+    # source_pos = [[0, 3], [2, 0], [5, 2], [3, 5]]
+    # hole_pos = [[2, 2], [2, 3], [3, 2], [3, 3]]
+    # city_dis = [0.25, 0.25, 0.25, 0.25]
+    # hole_city = [0, 1, 2, 3]
+    Height = 2
+    Width = 5
+    source_pos = [[0, 0]]
+    hole_pos = [[4, 1]]
+    city_dis = [1]
+    hole_city = [0]
 
 class Generator:
     RolloutSampleN = 10

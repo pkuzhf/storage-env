@@ -54,7 +54,8 @@ class ENV_GYM(gym.Env):
 
         self.last_pos = np.zeros([config.Map.Width, config.Map.Height, 1], dtype=np.int32)
         mid = np.concatenate((self.pathes, self.grid_type), axis=2)
-        return np.concatenate((mid, self.last_pos), axis=2)
+        # return np.concatenate((mid, self.last_pos), axis=2)
+        return self.pathes
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -63,9 +64,9 @@ class ENV_GYM(gym.Env):
     def _step(self, action):
         print "action:", action
         done = (self.gamestep == config.Map.Width*config.Map.Height * 32)
-        current_x = action/14/config.Map.Height
-        current_y = (action/14)%config.Map.Height
-        self.pathes[current_x][current_y] = self.actions_to_paths[action % 14]
+        current_x = action/4/config.Map.Height
+        current_y = (action/4)%config.Map.Height
+        self.pathes[current_x][current_y] = self.actions_to_paths[action % 4 + 10]
 
         self.step_count += 1
         self.gamestep += 1
@@ -82,7 +83,8 @@ class ENV_GYM(gym.Env):
 
         mid = np.concatenate((self.pathes, self.grid_type), axis=2)
 
-        return np.concatenate((mid, self.last_pos), axis=2), reward, done, {}
+        return self.pathes, reward, done, {}
+        # return np.concatenate((mid, self.last_pos), axis=2), reward, done, {}
 
     def _get_reward_from_agent(self, mazemap):
         # if want to enable DQN agent, change self.use_agent to True
@@ -107,7 +109,7 @@ class ENV_GYM(gym.Env):
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                if self.step_count % (36 * 20) == 0:
+                if self.step_count % (2000) == 0:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
                 else:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
