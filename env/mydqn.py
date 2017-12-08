@@ -316,8 +316,6 @@ class myDQNAgent(DQNAgent):
             # resetting the environment. We need to pass in `terminal=False` here since
             # the *next* state, that is the state of the newly reset environment, is
             # always non-terminal by convention.
-            if episode_step < 999:
-                episode_reward -= 50
 
             self.test_reward_his.append(episode_reward)
 

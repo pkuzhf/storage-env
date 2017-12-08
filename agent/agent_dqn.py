@@ -482,7 +482,7 @@ class DQNAgent(AbstractDQNAgent):
             if episode_step < 999:
                 episode_reward -= 24 * np.ones((self.agent_num, ))
 
-            self.test_reward_his.append(episode_reward)
+            self.test_reward_his.append(env.get_hole_reward())
             self.forward(observation)
             self.backward(0., terminal=False)
 

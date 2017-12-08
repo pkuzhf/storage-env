@@ -5,8 +5,8 @@ import config
 
 class pgAgent():
     def __init__(self, env, nb_action, nb_warm_up, policy, testPolicy, gamma, lr, memory_limit, batchsize, train_interval):
-        np.random.seed(1)
-        tf.set_random_seed(1)
+        np.random.seed(123123)
+        tf.set_random_seed(123123)
 
         self.env = env
         self.nb_action = nb_action
@@ -86,11 +86,12 @@ class pgAgent():
         batch_reward = np.zeros((batch_size, ))
         # batch_reward = -np.ones((batch_size, ))
         for i in range(batch_size):
-            index = random.randint(0, len(self.memory)-1)
+            index = random.randint(1, len(self.memory)-1)
             # index = -1
             batch_ob[i] = self.memory[index][0]
             batch_action[i] = self.memory[index][1]
             batch_reward[i] = self.memory[index][2]
+                              # - self.gamma * self.memory[index-1][2]
             # for j in range(9, -1, -1):
             #     # discount reward
             #     if self.memory[index+j][3]:
@@ -119,7 +120,7 @@ class pgAgent():
             filters=32,
             padding="SAME",
             kernel_size=[3, 3],
-            activation=tf.nn.relu
+            activation=tf.sigmoid
         )
 
         # conv2
@@ -128,7 +129,7 @@ class pgAgent():
             filters=32,
             padding="SAME",
             kernel_size=[3, 3],
-            activation=tf.nn.relu
+            activation=tf.sigmoid
         )
 
         reshape_conv2 = tf.reshape(conv2, [-1, 4, config.Map.Width, config.Map.Height, 32])
@@ -137,8 +138,8 @@ class pgAgent():
         layer = tf.layers.dense(
             inputs=reshape_conv2,
             units=10,
-            activation=tf.nn.relu,  # tanh activation
-            kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.3),
+            activation=tf.sigmoid,  # tanh activation
+            kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.1),
             bias_initializer=tf.constant_initializer(0.1),
             name='fc1'
         )
@@ -148,7 +149,7 @@ class pgAgent():
             inputs=flat_layer,
             units=self.nb_action,
             activation=None,
-            kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.3),
+            kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.1),
             bias_initializer=tf.constant_initializer(0.1),
             name='fc2'
         )

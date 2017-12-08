@@ -47,7 +47,10 @@ class ResultVisualizer:
         static_info.write(str(self.city_dis) + '\n')
         static_info.write(str(self.source_pos) + '\n')
         static_info.write(str(self.hole_pos) + '\n')
-        static_info.write(str(self.hole_city) + '\n')
+        if isinstance(self.trans, list):
+            static_info.write(str(self.hole_city) + '\n')
+        else:
+            static_info.write(str(self.hole_city.tolist()) + '\n')
         if isinstance(self.trans, list):
             static_info.write(str(self.trans) + '\n')
         else:
@@ -288,15 +291,36 @@ class ResultVisualizer:
         fig.savefig(self.directory + '/rewards.png', dpi=100, bbox_inches='tight')
         plt.close(fig)
 
+def draw_env_reward():
+    log = open('../reward_his', 'r')
+
+    rewards = []
+    r = log.readline()
+    while r != '':
+        r = eval(r)
+        if type(r) == type([]):
+            rewards.append(sum(r))
+        else:
+            rewards.append(r)
+        r = log.readline()
+    log.close()
+
+    fig = plt.figure()
+    plt.plot(range(len(rewards)), rewards)
+    fig.savefig('../rewards.png', dpi=100, bbox_inches='tight')
+    plt.close(fig)
+
 
 if __name__ == '__main__':
-    log = open('result/static_info', 'r')
-    mapsize = eval(log.readline())
-    city_dis = eval(log.readline())
-    source_pos = eval(log.readline())
-    hole_pos = eval(log.readline())
-    hole_city = eval(log.readline())
-    visualizer = ResultVisualizer(mapsize, source_pos, hole_pos,
-                                  hole_city, city_dis, -1, "result")
-    log.close()
-    visualizer.draw_log()
+    # log = open('result/static_info', 'r')
+    # mapsize = eval(log.readline())
+    # city_dis = eval(log.readline())
+    # source_pos = eval(log.readline())
+    # hole_pos = eval(log.readline())
+    # hole_city = eval(log.readline())
+    # visualizer = ResultVisualizer(mapsize, source_pos, hole_pos,
+    #                               hole_city, city_dis, -1, "result")
+    # log.close()
+    # visualizer.draw_log()
+
+    draw_env_reward()

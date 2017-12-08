@@ -81,3 +81,26 @@ def get_env_net():
     print('env model:')
     print(env_model_actor.summary())
     return env_model_actor
+
+
+def get_env_hole_net():
+
+    m = len(config.Map.hole_city)
+    d = len(config.Map.city_dis)
+
+    observation = Input(shape=(1, m, d), name='observation_input_actor')
+    x = Flatten()(observation)
+    x = Masking(mask_value=-1)(x)
+    x = Dense(32)(x)
+    x = Activation(activation='relu')(x)
+    x = Dense(32)(x)
+    x = Activation(activation='relu')(x)
+    x = Dense(32)(x)
+    x = Activation(activation='relu')(x)
+    q_values = Dense(m)(x)
+
+    env_model = Model(inputs=observation, outputs=q_values, name='env_actor')
+
+    print('env model:')
+    print(env_model.summary())
+    return env_model

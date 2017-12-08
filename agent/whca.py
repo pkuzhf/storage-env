@@ -6,6 +6,7 @@ import config, utils
 # import mapGenerator as MG
 import copy
 import Queue
+import random
 
 def encode(pos):
     [x, y] = pos
@@ -176,8 +177,10 @@ class WHCA:
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.hole_pos[i]
-
-        return end_pos
+        try:
+            return end_pos
+        except:
+            return [random.randint(1,config.Map.Width-2),random.randint(1,config.Map.Height-2)]
 
     def __init__(self, window, source_pos, hole_pos, hole_city, agent_num, reserve_interval=range(0, 2), trans=None):
         self.window = window

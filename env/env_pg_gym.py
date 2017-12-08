@@ -35,11 +35,16 @@ class ENV_GYM(gym.Env):
                         [1,1,1,0],[1,1,0,1],[1,0,1,1],[0,1,1,1]])
         self.start_time = time.time()
 
+        self.reward_history = open("reward_his",'w')
+        self.reward_history.write('')
+        self.reward_history.close()
+        self.reward_history = open("reward_his",'a')
+
     def _reset(self):
         self.gamestep = 0
         self.invalid_count = 0
         self.conflict_count = 0
-        self.pathes = np.ones([config.Map.Width, config.Map.Height, 4], dtype=np.int32)
+        self.pathes = np.zeros([config.Map.Width, config.Map.Height, 4], dtype=np.int32)
         self.grid_type = np.zeros([config.Map.Width, config.Map.Height, 3], dtype=np.int32)
         self.grid_type[0][0] = np.zeros((3, ))
         for i in range(config.Map.Width):
@@ -64,9 +69,9 @@ class ENV_GYM(gym.Env):
     def _step(self, action):
         print "action:", action
         done = (self.gamestep == config.Map.Width*config.Map.Height * 32)
-        current_x = action/4/config.Map.Height
-        current_y = (action/4)%config.Map.Height
-        self.pathes[current_x][current_y] = self.actions_to_paths[action % 4 + 10]
+        current_x = action/10/config.Map.Height
+        current_y = (action/10)%config.Map.Height
+        self.pathes[current_x][current_y] = self.actions_to_paths[action % 10 + 4]
 
         self.step_count += 1
         self.gamestep += 1
@@ -82,6 +87,8 @@ class ENV_GYM(gym.Env):
         print "reward:", reward
 
         mid = np.concatenate((self.pathes, self.grid_type), axis=2)
+
+        self.reward_history.write(str(reward)+'\n')
 
         return self.pathes, reward, done, {}
         # return np.concatenate((mid, self.last_pos), axis=2), reward, done, {}
@@ -109,7 +116,7 @@ class ENV_GYM(gym.Env):
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                if self.step_count % (2000) == 0:
+                if self.step_count % (3000) == 0:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
                 else:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)

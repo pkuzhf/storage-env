@@ -10,6 +10,7 @@ from collections import deque
 # from whca import WHCA
 from result_visualizer import ResultVisualizer
 from whca import WHCA
+import time
 
 
 class AGENT_GYM(gym.Env):
@@ -31,8 +32,12 @@ class AGENT_GYM(gym.Env):
         self.source_reward = [0] * len(source_pos)
         self.end_count = 0
         if self.astar:
-            self.window = 12
+            self.window = 9
             self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
+        self.package_nb_count = np.zeros((len(config.Map.city_dis)))
+        self.package_step_count = np.zeros((len(config.Map.city_dis)))
+        self.average_step = 20 * np.ones((len(config.Map.city_dis)))
+        self.agent_step = np.zeros((agent_num))
 
     def genCity(self, city_dis):
         return np.random.multinomial(1, city_dis, size=1).tolist()[0].index(1)
@@ -190,6 +195,8 @@ class AGENT_GYM(gym.Env):
         pack_count = []
 
         for i in range(self.agent_num):
+            if self.agent_step[i]!=0:
+                self.agent_step[i]+=1
             pack_count.append(0)
             pos = self.agent_pos[i]
             # a = action[i]
@@ -198,9 +205,19 @@ class AGENT_GYM(gym.Env):
             if pos in self.source_pos and self.agent_city[i] == -1:  # source
                 source_idx = self.source_pos.index(pos)
                 self.agent_city[i] = self.genCity(self.city_dis)
+
+                self.agent_step[i]+=1
+
                 self.source_reward[source_idx] += 1
                 rewards[i] += pick_drop
             elif pos in self.hole_pos and self.agent_city[i] != -1:  # hole
+
+                self.package_nb_count[self.agent_city[i]]+=1
+                self.package_step_count[self.agent_city[i]] += self.agent_step[i]
+                self.agent_step[i] = 0
+                # print "step_count:"
+                # print self.package_step_count[self.agent_city[i]]
+
                 hole_idx = self.hole_pos.index(pos)
                 self.agent_city[i] = -1
                 self.agent_reward[i] += 1
@@ -211,10 +228,16 @@ class AGENT_GYM(gym.Env):
         for r0 in rewards:
             if r0 > 0:
                 self.end_count = 0
+                break
         self.end_count += 1
         self.time += 1
         if self.time == self.total_time or self.end_count == 25:
             done = True
+            for i in range(len(config.Map.city_dis)):
+                if self.package_nb_count[i]==0:
+                    self.average_step[i] = 0
+                else:
+                    self.average_step[i] -= self.package_step_count[i]/self.package_nb_count[i]
         else:
             done = False
 
@@ -254,3 +277,12 @@ class AGENT_GYM(gym.Env):
                 formated_ob[i][3][self.agent_pos[j][0]][self.agent_pos[j][1]][0] = 1
 
         return formated_ob
+
+    def get_hole_reward(self):
+        target_reward = 0
+        for i in range(len(config.Map.hole_pos)):
+            if self.hole_city[i] != -1:
+                target_reward = self.average_step[i]
+            else:
+                break
+        return target_reward
