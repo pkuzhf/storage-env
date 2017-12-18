@@ -24,6 +24,8 @@ class ResultVisualizer:
         self.trans = trans
         if agent_num!=-1:
             self.remove_files()
+        if not os.path.exists(self.directory+'/pics'):
+            os.mkdir(self.directory + '/pics')
 
     def remove_files(self):
         if os.path.exists(self.directory):
