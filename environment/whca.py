@@ -89,6 +89,7 @@ class WHCA:
         pos = start_pos
         g[0][encode(pos)] = 0
         h[0][encode(pos)] = self.getDistance(start_pos, end_pos)
+        # assert self.getDistance(start_pos, end_pos)==utils.getDistance(start_pos, end_pos)
         path[0][encode(pos)] = [[-1, -1], -1, -1]
         schedule = []
         while len(open_set) > 0:
@@ -107,7 +108,7 @@ class WHCA:
             # dirs = utils.dirs + [[0, 0]]
             # dirs = utils.dirs
             all_dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
-            dirs = [[0, 0]]
+            dirs = []
             for i in range(4):
                 if self.trans[pos[0]][pos[1]][i] == 1:
                     cur_dir = all_dir[i]
@@ -116,6 +117,7 @@ class WHCA:
                             or next_pos in self.source_pos and self.agent_city[agent_id]!=-1:
                         continue
                     dirs.append(cur_dir)
+            # dirs.append([0, 0])
             for i in range(len(dirs)):
                 a = dirs[i]
                 new_pos = [pos[0] + a[0], pos[1] + a[1]]
@@ -129,6 +131,7 @@ class WHCA:
                     open_set.append([new_pos, t + 1])
                     g[t + 1][encode(new_pos)] = new_g
                     h[t + 1][encode(new_pos)] = self.getDistance(new_pos, end_pos)
+                    # assert self.getDistance(new_pos, end_pos) == utils.getDistance(new_pos, end_pos)
                     path[t + 1][encode(new_pos)] = [pos, t, a]
                 elif new_g < g[t + 1][encode(new_pos)]:
                     g[t + 1][encode(new_pos)] = new_g
@@ -159,6 +162,7 @@ class WHCA:
         if city == -1:
             for i in range(len(self.source_pos)):
                 distance = self.getDistance(start_pos, self.source_pos[i])
+                # assert self.getDistance(start_pos, self.source_pos[i]) == utils.getDistance(start_pos, self.source_pos[i])
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.source_pos[i]
@@ -166,7 +170,8 @@ class WHCA:
             for i in range(len(self.hole_pos)):
                 if self.hole_city[i] != city:
                     continue
-                distance = self.getDistance(start_pos, self.hole_pos[i], )
+                distance = self.getDistance(start_pos, self.hole_pos[i])
+                # assert self.getDistance(start_pos, self.hole_pos[i]) == utils.getDistance(start_pos, self.hole_pos[i])
                 if min_distance == -1 or distance < min_distance:
                     min_distance = distance
                     end_pos = self.hole_pos[i]
@@ -185,6 +190,7 @@ class WHCA:
         self.reserve_interval = reserve_interval
         self.trans = trans
         self.distance = self.get_all_distance()
+        self.agent_city = [-1 for _ in range(agent_num)]
 
     def get_one_distance(self, start):
         scale = config.Map.Width * config.Map.Height
@@ -221,10 +227,9 @@ class WHCA:
     def getDistance(self, start, end):
         # print end, start
         # print self.distance[end[0]][end[1]]
-        return self.distance[start[0]][start[1]][end[0]][end[1]]
+        return int(self.distance[start[0]][start[1]][end[0]][end[1]])
 
     def getJointAction(self, agent_pos, agent_city, end_poses):
-
         self.agent_pos = agent_pos
         self.agent_city = agent_city
 
