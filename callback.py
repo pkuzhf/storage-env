@@ -93,7 +93,7 @@ class myTestLogger(Callback):
         template = 'Episode {0}: reward: {1}, steps: {2}'
         variables = [
             episode + 1,
-            logs['episode_reward'],
+            sum(logs['episode_reward']),
             logs['nb_steps'],
         ]
         print(template.format(*variables))
