@@ -9,6 +9,7 @@ import sys
 import time
 import os
 import imageio
+import random
 
 
 class ResultVisualizer:
@@ -48,7 +49,7 @@ class ResultVisualizer:
         static_info.write(str(self.source_pos) + '\n')
         static_info.write(str(self.hole_pos) + '\n')
         static_info.write(str(self.hole_city) + '\n')
-        static_info.write(str(self.trans) + '\n')
+        static_info.write(str(self.trans.tolist()) + '\n')
         static_info.close()
 
 
@@ -191,7 +192,7 @@ class ResultVisualizer:
 
         # plt.show()
         if not os.path.exists(dir):
-            os.makedirs(dir)
+            os.mkdir(dir)
         fig.savefig(dir + '/' + filename + str(step) + '.png', dpi=100, bbox_inches='tight')
         plt.close(fig)
 
@@ -208,7 +209,7 @@ class ResultVisualizer:
                 writer.append_data(image)
 
     def draw_log(self):
-        self.draw_reward()
+        # self.draw_reward()
 
         log = open(self.directory + '/static_info', 'r')
         mapsize = eval(log.readline())
@@ -282,7 +283,7 @@ class ResultVisualizer:
 
         fig = plt.figure()
         plt.plot(range(len(rewards)),rewards)
-        fig.savefig(self.directory + '/rewards.png', dpi=100, bbox_inches='tight')
+        fig.savefig(self.directory + '/rewards.png', dpi=150, bbox_inches='tight')
         plt.close(fig)
 
 
@@ -293,7 +294,8 @@ if __name__ == '__main__':
     source_pos = eval(log.readline())
     hole_pos = eval(log.readline())
     hole_city = eval(log.readline())
+    trans = eval(log.readline())
     visualizer = ResultVisualizer(mapsize, source_pos, hole_pos,
-                                  hole_city, city_dis, -1, "result")
+                                  hole_city, city_dis, -1, "result",trans)
     log.close()
     visualizer.draw_log()
