@@ -4,7 +4,7 @@ import pylab as pl
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
-
+import random
 
 def bigMap(w,h):
     source=[]
@@ -135,3 +135,67 @@ def show_map(mapsize, conveyors, hole_pos):
     # randomCity(4,6)
     # a,b=generateMap(edge,edge)
     # show_map((edge,edge),a,b)
+
+def hugeMap(w,h):
+    source=[]
+    hole=[]
+
+    sy=2
+    for i in range(h):
+        source.append([2,sy])
+        source.append([w-3,sy])
+        sy+=3
+        if sy>h-3:
+            break
+
+    if w%3==1:
+        xbias=1
+    else:
+        xbias=0
+
+    if h%3==2:
+        ybias=1
+    else:
+        ybias=0
+    hx = 5+xbias
+    hy = 2+ybias
+
+    while hy<h-3:
+        while hx<w-5:
+            hole.append([hx,hy])
+            hx+=3
+        hx=5+xbias
+        hy+=3
+
+    nb_hole = len(hole)
+    citydis = [1.0 for i in range(nb_hole/4)]
+    for i in range(nb_hole / 4):
+        citydis[i]+=random.randint(1,4)
+    dis_sum = sum(citydis)
+    for i in range(nb_hole / 4):
+        citydis[i]/=dis_sum
+
+    hole_city = [-1 for i in range(nb_hole)]
+    for i in range(nb_hole / 4):
+        choice = random.randint(0, nb_hole-1)
+        while hole_city[choice]!=-1:
+            choice = random.randint(0, nb_hole - 1)
+        hole_city[choice] = i
+    for i in range(nb_hole):
+        if hole_city[i]==-1:
+            hole_city[i] = np.random.multinomial(1, citydis, size=1).tolist()[0].index(1)
+
+    return source, hole, hole_city, citydis
+
+
+def huge_map_city(nb_hole, citydis):
+    hole_city = [-1 for i in range(nb_hole)]
+    for i in range(nb_hole / 4):
+        choice = random.randint(0, nb_hole - 1)
+        while hole_city[choice] != -1:
+            choice = random.randint(0, nb_hole - 1)
+        hole_city[choice] = i
+    for i in range(nb_hole):
+        if hole_city[i] == -1:
+            hole_city[i] = np.random.multinomial(1, citydis, size=1).tolist()[0].index(1)
+    return hole_city
