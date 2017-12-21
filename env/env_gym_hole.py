@@ -34,13 +34,13 @@ class ENV_GYM(gym.Env):
         self.gamestep = 0
         self.invalid_count = 0
         self.conflict_count = 0
-        self.reward_his = deque(maxlen=1000)
+        self.hole_reward = None
         self.step_count = 0
 
         self.used_agent = False
 
         self.new_city_hole = -np.ones((len(config.Map.hole_pos)), dtype=np.int8)
-        self.onehot_city_hole = -np.ones((len(config.Map.hole_pos), len(config.Map.city_dis)), dtype=np.int8)
+        self.onehot_city_hole = np.zeros((len(config.Map.hole_pos), len(config.Map.city_dis)), dtype=np.int8)
         self.mask = np.zeros((len(config.Map.hole_pos)), dtype=np.int8)
         trans = np.ones((config.Map.Width, config.Map.Height, 4), dtype=np.int8)
         for i in range(0, config.Map.Width):
@@ -61,7 +61,7 @@ class ENV_GYM(gym.Env):
         self.invalid_count = 0
         self.conflict_count = 0
         self.new_city_hole = -np.ones((len(config.Map.hole_pos)), dtype=np.int8)
-        self.onehot_city_hole = -np.ones((len(config.Map.hole_pos), len(config.Map.city_dis)), dtype=np.int8)
+        self.onehot_city_hole = np.zeros((len(config.Map.hole_pos), len(config.Map.city_dis)), dtype=np.int8)
         self.mask = np.zeros((len(config.Map.hole_pos)), dtype=np.int8)
         return self.onehot_city_hole
 
@@ -73,26 +73,25 @@ class ENV_GYM(gym.Env):
         # print "action:", action
         done = (self.gamestep == (len(config.Map.hole_pos)-1))
 
-
         self.new_city_hole[action] = config.Map.hole_city[self.gamestep]
         self.mask[action] = 1
-        for i in range(len(config.Map.city_dis)):
-            self.onehot_city_hole[action][i] = 0
         self.onehot_city_hole[action][config.Map.hole_city[self.gamestep]] = 1
 
-        reward = self._get_reward_from_agent(done)
         self.step_count += 1
         self.gamestep += 1
+        if done:
+            reward = self._get_reward_from_agent()
+        else:
+            reward = 0
 
         print "total time:", (time.time()-self.start_time)/60
         print "env reward:", reward
 
         return self.onehot_city_hole, reward, done, {}
 
-    def _get_reward_from_agent(self, done):
+    def _get_reward_from_agent(self):
         # TODO maybe could check valid map here
         # if want to enable DQN agent, change self.use_agent to True
-
         agent_gym = AGENT_GYM_HOLE(config.Map.source_pos, config.Map.hole_pos, config.Game.AgentNum, config.Game.total_time,
                               self.new_city_hole, config.Map.city_dis, self.trans, self.used_agent)
         agent_gym.agent = self.agent
@@ -110,11 +109,12 @@ class ENV_GYM(gym.Env):
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                if done:
+                if (self.gamestep+1)%2000 == 0:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
                 else:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
-            return np.mean(self.agent.test_reward_his)
+            self.hole_reward = agent_gym.hole_reward
+            return np.mean(self.agent.test_reward_his)/10
 
     def get_mask(self):
         return self.mask

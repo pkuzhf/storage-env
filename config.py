@@ -1,8 +1,11 @@
+distances = None
+
+
 class Game:
     Seed = 1234567
     AgentAction = 4
     AgentNum = 10
-    total_time = 1000
+    total_time = 500
 
 class Map:
     Height = 20
@@ -26,6 +29,7 @@ class Map:
     hole_pos = [[5, 3], [8, 3], [11, 3], [14, 3], [5, 6], [8, 6], [11, 6], [14, 6], [5, 9], [8, 9], [11, 9], [14, 9],
                 [5, 12], [8, 12], [11, 12], [14, 12], [5, 15], [8, 15], [11, 15], [14, 15]]
     hole_city = [0, 2, 2, 4, 2, 3, 1, 4, 4, 3, 1, 2, 3, 0, 0, 2, 3, 3, 0, 3]
+
 
 class Generator:
     RolloutSampleN = 10

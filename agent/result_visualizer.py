@@ -9,6 +9,7 @@ import sys
 import time
 import os
 import imageio
+import config
 
 
 class ResultVisualizer:
@@ -59,7 +60,7 @@ class ResultVisualizer:
 
 
     def write_ob(self, step, agent_pos, agent_city, agent_reward, hole_reward, source_reward, reward):
-        episode = (step-1) / 1000
+        episode = (step-1) / config.Game.total_time
         log = open(self.directory + '/observation/'+str(episode), 'a')
         log.write(str(agent_reward) + '\n')
         log.write(str(source_reward) + '\n')

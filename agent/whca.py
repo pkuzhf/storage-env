@@ -193,7 +193,13 @@ class WHCA:
         self.agent_pos = None
         self.reserve_interval = reserve_interval
         self.trans = trans
-        self.distance = self.get_all_distance()
+        if config.distances is None:
+            self.distance = self.get_all_distance()
+            config.distances = copy.deepcopy(self.distance)
+            # print config.distances[0]
+            # print self.trans[0]
+        else:
+            self.distance = config.distances
 
     def get_one_distance(self, start):
         scale = config.Map.Width * config.Map.Height

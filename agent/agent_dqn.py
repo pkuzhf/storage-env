@@ -244,7 +244,8 @@ class DQNAgent(AbstractDQNAgent):
     def forward(self, observation):
         # Select an action.
         # state = self.memory.get_recent_state(observation)
-        q_values = self.compute_q_values(observation)
+        # q_values = self.compute_q_values(observation)
+        q_values = np.zeros((self.agent_num, self.nb_actions))
         if self.training:
             action = self.policy.select_action(q_values=q_values)
         else:
@@ -482,7 +483,7 @@ class DQNAgent(AbstractDQNAgent):
             if episode_step < 999:
                 episode_reward -= 24 * np.ones((self.agent_num, ))
 
-            self.test_reward_his.append(env.get_hole_reward())
+            self.test_reward_his.append(episode_reward)
             self.forward(observation)
             self.backward(0., terminal=False)
 

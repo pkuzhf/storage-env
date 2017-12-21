@@ -34,10 +34,11 @@ class AGENT_GYM(gym.Env):
         if self.astar:
             self.window = 9
             self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
-        self.package_nb_count = np.zeros((len(config.Map.city_dis)))
-        self.package_step_count = np.zeros((len(config.Map.city_dis)))
-        self.average_step = 20 * np.ones((len(config.Map.city_dis)))
-        self.agent_step = np.zeros((agent_num))
+        # self.package_nb_count = np.zeros((len(config.Map.city_dis)))
+        # self.package_step_count = np.zeros((len(config.Map.city_dis)))
+        # self.average_step = 15 * np.ones((len(config.Map.city_dis)))
+        # self.agent_step = np.zeros((agent_num))
+
 
     def genCity(self, city_dis):
         return np.random.multinomial(1, city_dis, size=1).tolist()[0].index(1)
@@ -86,10 +87,10 @@ class AGENT_GYM(gym.Env):
     def _step(self, action):
         dir = [[1, 0], [0, 1], [-1, 0], [0, -1]]
 
-        rewards = [-0.1]*self.agent_num
+        rewards = [0]*self.agent_num
         hit_wall = 1
         illegal = 1
-        pick_drop = 10
+        pick_drop = 1
 
         agent_next_pos = []
         if self.astar:
@@ -195,8 +196,8 @@ class AGENT_GYM(gym.Env):
         pack_count = []
 
         for i in range(self.agent_num):
-            if self.agent_step[i]!=0:
-                self.agent_step[i]+=1
+            # if self.agent_step[i]!=0:
+            #     self.agent_step[i]+=1
             pack_count.append(0)
             pos = self.agent_pos[i]
             # a = action[i]
@@ -206,15 +207,15 @@ class AGENT_GYM(gym.Env):
                 source_idx = self.source_pos.index(pos)
                 self.agent_city[i] = self.genCity(self.city_dis)
 
-                self.agent_step[i]+=1
+                # self.agent_step[i]+=1
 
                 self.source_reward[source_idx] += 1
                 rewards[i] += pick_drop
             elif pos in self.hole_pos and self.agent_city[i] != -1:  # hole
 
-                self.package_nb_count[self.agent_city[i]]+=1
-                self.package_step_count[self.agent_city[i]] += self.agent_step[i]
-                self.agent_step[i] = 0
+                # self.package_nb_count[self.agent_city[i]]+=1
+                # self.package_step_count[self.agent_city[i]] += self.agent_step[i]
+                # self.agent_step[i] = 0
                 # print "step_count:"
                 # print self.package_step_count[self.agent_city[i]]
 
@@ -233,11 +234,11 @@ class AGENT_GYM(gym.Env):
         self.time += 1
         if self.time == self.total_time or self.end_count == 25:
             done = True
-            for i in range(len(config.Map.city_dis)):
-                if self.package_nb_count[i]==0:
-                    self.average_step[i] = 0
-                else:
-                    self.average_step[i] -= self.package_step_count[i]/self.package_nb_count[i]
+            # for i in range(len(config.Map.city_dis)):
+            #     if self.package_nb_count[i]==0:
+            #         self.average_step[i] = 0
+            #     else:
+            #         self.average_step[i] -= self.package_step_count[i]/self.package_nb_count[i]
         else:
             done = False
 
@@ -250,39 +251,39 @@ class AGENT_GYM(gym.Env):
 
     def format_ob(self):
         formated_ob = np.zeros((self.agent_num, 4, config.Map.Width, config.Map.Height, 1), dtype=np.int32)
-        for i in range(self.agent_num):
-            formated_ob[i][0][self.agent_pos[i][0]][self.agent_pos[i][1]][0] = 1
-            # end
-            if (self.agent_city[i] == -1):
-                for j in range(len(self.source_pos)):
-                    formated_ob[i][1][self.source_pos[j][0]][self.source_pos[j][1]][0] = 1
-            else:
-                for j in range(len(self.hole_pos)):
-                    if self.hole_city[j] == self.agent_city[i]:
-                        formated_ob[i][1][self.hole_pos[j][0]][self.hole_pos[j][1]][0] = 1
-            # wall (can be combine with above)
-            if (self.agent_city[i] == -1):
-                for j in range(len(self.hole_pos)):
-                    formated_ob[i][2][self.hole_pos[j][0]][self.hole_pos[j][1]][0] = 1
-            else:
-                for j in range(len(self.hole_pos)):
-                    if self.hole_city[j] != self.agent_city[i]:
-                        formated_ob[i][2][self.hole_pos[j][0]][self.hole_pos[j][1]][0] = 1
-                for j in range(len(self.source_pos)):
-                    formated_ob[i][2][self.source_pos[j][0]][self.source_pos[j][1]][0] = 1
-            # others
-            for j in range(self.agent_num):
-                if i == j:
-                    continue
-                formated_ob[i][3][self.agent_pos[j][0]][self.agent_pos[j][1]][0] = 1
+        # for i in range(self.agent_num):
+        #     formated_ob[i][0][self.agent_pos[i][0]][self.agent_pos[i][1]][0] = 1
+        #     # end
+        #     if (self.agent_city[i] == -1):
+        #         for j in range(len(self.source_pos)):
+        #             formated_ob[i][1][self.source_pos[j][0]][self.source_pos[j][1]][0] = 1
+        #     else:
+        #         for j in range(len(self.hole_pos)):
+        #             if self.hole_city[j] == self.agent_city[i]:
+        #                 formated_ob[i][1][self.hole_pos[j][0]][self.hole_pos[j][1]][0] = 1
+        #     # wall (can be combine with above)
+        #     if (self.agent_city[i] == -1):
+        #         for j in range(len(self.hole_pos)):
+        #             formated_ob[i][2][self.hole_pos[j][0]][self.hole_pos[j][1]][0] = 1
+        #     else:
+        #         for j in range(len(self.hole_pos)):
+        #             if self.hole_city[j] != self.agent_city[i]:
+        #                 formated_ob[i][2][self.hole_pos[j][0]][self.hole_pos[j][1]][0] = 1
+        #         for j in range(len(self.source_pos)):
+        #             formated_ob[i][2][self.source_pos[j][0]][self.source_pos[j][1]][0] = 1
+        #     # others
+        #     for j in range(self.agent_num):
+        #         if i == j:
+        #             continue
+        #         formated_ob[i][3][self.agent_pos[j][0]][self.agent_pos[j][1]][0] = 1
 
         return formated_ob
 
-    def get_hole_reward(self):
-        target_reward = 0
-        for i in range(len(config.Map.hole_pos)):
-            if self.hole_city[i] != -1:
-                target_reward = self.average_step[i]
-            else:
-                break
-        return target_reward
+    # def get_hole_reward(self):
+    #     target_reward = 0
+    #     for i in range(len(config.Map.hole_pos)):
+    #         if self.hole_city[i] != -1:
+    #             target_reward = self.average_step[i]
+    #         else:
+    #             break
+    #     return target_reward
