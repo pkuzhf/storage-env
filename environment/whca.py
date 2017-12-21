@@ -6,6 +6,7 @@ import config, utils
 # import mapGenerator as MG
 import copy
 import Queue
+import random
 
 def encode(pos):
     [x, y] = pos
@@ -158,23 +159,57 @@ class WHCA:
 
     def findEndPos(self, city, agent_id):
         start_pos = self.agent_pos[agent_id]
-        min_distance = -1
+        min_distance = [-1]
+        end_poss = []
         if city == -1:
             for i in range(len(self.source_pos)):
                 distance = self.getDistance(start_pos, self.source_pos[i])
                 # assert self.getDistance(start_pos, self.source_pos[i]) == utils.getDistance(start_pos, self.source_pos[i])
-                if min_distance == -1 or distance < min_distance:
-                    min_distance = distance
-                    end_pos = self.source_pos[i]
+                for j in range(3):
+                    if min_distance[j] == -1 or distance < min_distance[j]:
+                        min_distance.insert(j, distance)
+                        end_poss.insert(j, self.source_pos[i])
+            choice = random.random()
+            if len(end_poss)>=3:
+                if choice<0.6:
+                    end_pos = end_poss[0]
+                elif choice<0.8:
+                    end_pos = end_poss[1]
+                else:
+                    end_pos = end_poss[2]
+            elif len(end_poss) == 2:
+                if choice<0.8:
+                    end_pos = end_poss[0]
+                else:
+                    end_pos = end_poss[1]
+            else:
+                end_pos = end_poss[0]
+
         else:
             for i in range(len(self.hole_pos)):
                 if self.hole_city[i] != city:
                     continue
                 distance = self.getDistance(start_pos, self.hole_pos[i])
                 # assert self.getDistance(start_pos, self.hole_pos[i]) == utils.getDistance(start_pos, self.hole_pos[i])
-                if min_distance == -1 or distance < min_distance:
-                    min_distance = distance
-                    end_pos = self.hole_pos[i]
+                for j in range(3):
+                    if min_distance[j] == -1 or distance < min_distance[j]:
+                        min_distance.insert(j, distance)
+                        end_poss.insert(j, self.hole_pos[i])
+            choice = random.random()
+            if len(end_poss) >= 3:
+                if choice < 0.6:
+                    end_pos = end_poss[0]
+                elif choice < 0.8:
+                    end_pos = end_poss[1]
+                else:
+                    end_pos = end_poss[2]
+            elif len(end_poss) == 2:
+                if choice < 0.8:
+                    end_pos = end_poss[0]
+                else:
+                    end_pos = end_poss[1]
+            else:
+                end_pos = end_poss[0]
 
         return end_pos
 
