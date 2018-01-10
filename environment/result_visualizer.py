@@ -288,16 +288,34 @@ class ResultVisualizer:
         fig.savefig(self.directory + '/rewards.png', dpi=150, bbox_inches='tight')
         plt.close(fig)
 
+def hundredReward():
+    rewards = open('100rewards.txt','r')
+    line = rewards.readline()
+    line = line.split('.')
+    rewards = [[] for _ in range(15)]
+    for i in range(len(line)-1):
+        if line[i][0] == '0':
+            line[i] = line[i][1:]
+        rewards[i/8].append(eval(line[i]))
+
+    fig = plt.figure()
+    for i in range(15):
+        plt.scatter([60*(i+1) for _ in range(8)],rewards[i])
+        rewards[i] = sum(rewards[i])/8
+    plt.plot(range(60,901,60),rewards)
+    plt.xticks(range(60,901,60))
+    plt.show()
 
 if __name__ == '__main__':
-    log = open('result/static_info', 'r')
-    mapsize = eval(log.readline())
-    city_dis = eval(log.readline())
-    source_pos = eval(log.readline())
-    hole_pos = eval(log.readline())
-    hole_city = eval(log.readline())
-    trans = eval(log.readline())
-    visualizer = ResultVisualizer(mapsize, source_pos, hole_pos,
-                                  hole_city, city_dis, -1, "result",trans)
-    log.close()
-    visualizer.draw_log()
+    # log = open('result/static_info', 'r')
+    # mapsize = eval(log.readline())
+    # city_dis = eval(log.readline())
+    # source_pos = eval(log.readline())
+    # hole_pos = eval(log.readline())
+    # hole_city = eval(log.readline())
+    # trans = eval(log.readline())
+    # visualizer = ResultVisualizer(mapsize, source_pos, hole_pos,
+    #                               hole_city, city_dis, -1, "result",trans)
+    # log.close()
+    # visualizer.draw_log()
+    hundredReward()

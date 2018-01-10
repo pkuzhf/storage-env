@@ -511,7 +511,7 @@ class DQNAgent(AbstractDQNAgent):
 
         callbacks.on_train_end()
         self._on_test_end()
-        env.visualizer.draw_log()
+        # env.visualizer.draw_log()
 
         return history
 

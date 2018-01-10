@@ -96,4 +96,7 @@ class myTestLogger(Callback):
             sum(logs['episode_reward']),
             logs['nb_steps'],
         ]
+        rewards = open("100rewards.txt", 'a')
+        rewards.write(str(sum(logs['episode_reward'])))
         print(template.format(*variables))
+        # print(sum(logs['episode_reward']))

@@ -199,3 +199,60 @@ def huge_map_city(nb_hole, citydis):
         if hole_city[i] == -1:
             hole_city[i] = np.random.multinomial(1, citydis, size=1).tolist()[0].index(1)
     return hole_city
+
+
+def hundredMap(w,h):
+    source=[]
+    hole=[]
+
+    sy=2
+    for i in range(h):
+        source.append([2,sy])
+        source.append([w-3,sy])
+        sy+=3
+        if sy>h-3:
+            break
+
+    if w%3==1:
+        xbias=1
+    else:
+        xbias=0
+
+    if h%3==2:
+        ybias=1
+    else:
+        ybias=0
+    hx = 5+xbias
+    hy = 2+ybias
+
+    while hy<h-3:
+        while hx<w-5:
+            hole.append([hx,hy])
+            hx+=3
+        hx=5+xbias
+        hy+=3
+
+    nb_hole = len(hole)
+    citydis = np.zeros((100,))
+    for i in range(100):
+        citydis[i] = 1/(0.075 + 0.03 * i)
+    dis_sum = sum(citydis)
+    citydis /= dis_sum
+    # print citydis
+    # print citydis[0], citydis[99]
+
+    hole_city = [-1 for i in range(nb_hole)]
+    for i in range(100):
+        choice = random.randint(0, 99)
+        while hole_city[choice]!=-1:
+            choice = random.randint(0, 99)
+        hole_city[choice] = i
+    for i in range(nb_hole):
+        if hole_city[i]==-1:
+            hole_city[i] = np.random.choice(range(100), p=citydis)
+
+    return source, hole, hole_city, citydis
+
+
+if __name__ == "__main__":
+    hundredMap(100, 100)
