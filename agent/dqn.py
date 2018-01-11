@@ -494,6 +494,10 @@ class DQNAgent(AbstractDQNAgent):
                 episode_step += 1
                 self.step += 1
 
+                # if episode_step % 100 == 0:
+                #     step_reward = open('steps_reward.txt', 'a')
+                #     step_reward.write(str(sum(episode_reward.tolist()))+'\n')
+
             # We are in a terminal state but the agent hasn't yet seen it. We therefore
             # perform one more forward-backward call and simply ignore the action before
             # resetting the environment. We need to pass in `terminal=False` here since
@@ -511,7 +515,7 @@ class DQNAgent(AbstractDQNAgent):
 
         callbacks.on_train_end()
         self._on_test_end()
-        # env.visualizer.draw_log()
+        env.visualizer.draw_log()
 
         return history
 
@@ -630,6 +634,7 @@ class DQNAgent(AbstractDQNAgent):
                     done = True
                 metrics = self.backward(reward, terminal=done)
                 episode_reward += reward
+
 
                 step_logs = {
                     'action': action,

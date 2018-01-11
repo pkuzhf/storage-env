@@ -253,6 +253,18 @@ def hundredMap(w,h):
 
     return source, hole, hole_city, citydis
 
+def hundred_map_city(nb_hole, citydis):
+    hole_city = [-1 for i in range(nb_hole)]
+    for i in range(100):
+        choice = random.randint(0, nb_hole - 1)
+        while hole_city[choice] != -1:
+            choice = random.randint(0, nb_hole - 1)
+        hole_city[choice] = i
+    for i in range(nb_hole):
+        if hole_city[i] == -1:
+            hole_city[i] = np.random.choice(range(100), p=citydis)
+    return hole_city
+
 
 if __name__ == "__main__":
     hundredMap(100, 100)

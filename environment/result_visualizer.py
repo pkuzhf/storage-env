@@ -244,7 +244,7 @@ class ResultVisualizer:
             old_agent_pos = agent_pos
             # old_agent_city = agent_city
 
-            for j in range(99):
+            for j in range(199):
                 step += 1
                 agent_reward = eval(log.readline())
                 source_reward = eval(log.readline())
@@ -266,7 +266,7 @@ class ResultVisualizer:
 
             log.close()
             try:
-                self.save_mp4(self.directory+"/pics/"+file, "demo", 199)
+                self.save_mp4(self.directory+"/pics/"+file, "demo", 399)
             except:
                 pass
 
@@ -306,6 +306,20 @@ def hundredReward():
     plt.xticks(range(60,901,60))
     plt.show()
 
+def stepsReward():
+    r_file = open('steps_reward.txt','r')
+    rewards = [[] for _ in range(5)]
+    for i in range(40):
+        line = r_file.readline()
+        line = eval(line)
+        rewards[i/8].append(line)
+
+    fig = plt.figure()
+    for i in range(5):
+        plt.plot(range(100,801,100),rewards[i])
+    plt.xticks(range(100,801,100))
+    plt.show()
+
 if __name__ == '__main__':
     # log = open('result/static_info', 'r')
     # mapsize = eval(log.readline())
@@ -318,4 +332,4 @@ if __name__ == '__main__':
     #                               hole_city, city_dis, -1, "result",trans)
     # log.close()
     # visualizer.draw_log()
-    hundredReward()
+    stepsReward()

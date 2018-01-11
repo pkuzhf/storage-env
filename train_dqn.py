@@ -33,7 +33,7 @@ parser.add_argument('--weights', type=str, default=None)
 args = parser.parse_args()
 
 # Get the environment and extract the number of actions.
-total_time = 400
+total_time = 1000
 # source_pos, hole_pos = MG.bigMap(config.Map.Height, config.Map.Width)
 # source_pos, hole_pos, hole_city, city_dis = MG.hugeMap(config.Map.Width, config.Map.Height)
 # source_pos, hole_pos, hole_city, city_dis = MG.hundredMap(config.Map.Width, config.Map.Height)
@@ -49,7 +49,7 @@ city_dis = config.Map.city_dis
 # hole_city = [0, 2, 2, 4, 2, 3, 1, 4, 4, 3, 1, 2, 3, 0, 0, 2, 3, 3, 0, 3]
 # hole_city = [0, 2, 0, 3, 2, 1, 2, 3, 3, 1, 1, 0, 1, 4, 4, 2, 0, 2, 1, 3]
 # hole_city = [0, 1, 2, 3, 3, 4, 1, 0, 2, 0, 3, 2, 0, 1, 4, 3, 3, 2, 1, 0]
-agent_num = 3
+agent_num = 500
 window = 8
 # nb_action = 5 + len(source_pos) + len(hole_pos)
 nb_action = 4
@@ -91,8 +91,9 @@ for i in range(0,config.Map.Width):
             trans[i][j][0] = 0
 
 
-for i in range(15):
-    agent_num = (i+1)*60
+for i in range(1):
+    # agent_num = (i+1)*60
+    # hole_city = MG.hundred_map_city(len(hole_pos),city_dis)
     env = AGENT_GYM(source_pos, hole_pos, agent_num, total_time, hole_city, city_dis, window, trans=trans)
     # np.random.seed(123)
     env.seed(config.Game.Seed)
@@ -119,7 +120,7 @@ for i in range(15):
 
     # # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
     # # even the metrics!
-    memory = SequentialMemory(limit=400000, window_length=4)
+    memory = SequentialMemory(limit=40000, window_length=4)
     # processor = AtariProcessor()
 
     # Select a policy. We use eps-greedy action selection, which means that a random action is selected
@@ -150,4 +151,4 @@ for i in range(15):
     # Finally, evaluate our algorithm for 10 episodes.
     # test episodes will be visualized
     # dqn.test(env2, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
-    dqn.test(env, nb_episodes=8, visualize=False, callbacks=testlogger, verbose=0)
+    dqn.test(env, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)

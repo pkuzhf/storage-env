@@ -1,13 +1,11 @@
-import numpy as np
-import config, utils, copy
-
 import gym
-from gym import spaces
-from rl.core import Processor
-from gym.utils import seeding
-from collections import deque
-from whca import WHCA
+import numpy as np
 from greedyastar import GreedyAstar
+from gym.utils import seeding
+
+import config
+import copy
+import utils
 from result_visualizer import ResultVisualizer
 
 
@@ -132,8 +130,6 @@ class AGENT_GYM(gym.Env):
         # print self.agent_pos
         # print astarAction
         # print
-
-        self.steps += 1
 
         # invalid
         for i in range(self.agent_num):
@@ -262,6 +258,7 @@ class AGENT_GYM(gym.Env):
 
 
         self.time += 1
+        self.steps += 1
         if self.time == self.total_time:
             done = True
         else:
