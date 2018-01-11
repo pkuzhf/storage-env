@@ -36,6 +36,7 @@ class ENV_GYM(gym.Env):
         self.conflict_count = 0
         self.hole_reward = None
         self.step_count = 0
+        self.episode_count = 1
 
         self.used_agent = False
 
@@ -81,11 +82,10 @@ class ENV_GYM(gym.Env):
         self.gamestep += 1
         if done:
             reward = self._get_reward_from_agent()
+            print "total time:", (time.time() - self.start_time) / 60
+            print "env reward:", reward*10
         else:
             reward = 0
-
-        print "total time:", (time.time()-self.start_time)/60
-        print "env reward:", reward
 
         return self.onehot_city_hole, reward, done, {}
 
@@ -96,6 +96,8 @@ class ENV_GYM(gym.Env):
                               self.new_city_hole, config.Map.city_dis, self.trans, self.used_agent)
         agent_gym.agent = self.agent
         agent_gym.reset()
+
+        self.episode_count += 1
 
         self.agent.reward_his.clear()
         # we do not reset the agent network, to accelerate the training.
@@ -109,10 +111,12 @@ class ENV_GYM(gym.Env):
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                if (self.gamestep+1)%2000 == 0:
+                if (self.episode_count)%75 == 0:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
+                    print self.new_city_hole
                 else:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
+                    print self.new_city_hole
             self.hole_reward = agent_gym.hole_reward
             return np.mean(self.agent.test_reward_his)/10
 

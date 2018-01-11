@@ -296,13 +296,26 @@ class GreedyQPolicy2D(Policy):
 class MultiDisPolicy(Policy):
     def select_action(self, q_values):
         # print "distribution", q_values
-        masked_q = np.zeros_like(q_values)
-        for i in range(len(q_values)):
-            if self.mask[i]==0:
-                masked_q[i]=q_values[i]
-        masked_q = masked_q/np.linalg.norm(masked_q)
-        while sum(masked_q) > 1 - 1e-8:
-            masked_q /= (1 + 1e-5)
-        choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
-        print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
-        return choice
+        try:
+            masked_q = np.zeros_like(q_values)
+            for i in range(len(q_values)):
+                if self.mask[i]==0:
+                    masked_q[i]=q_values[i]
+            masked_q = masked_q/sum(masked_q)
+            while sum(masked_q) > 1 - 1e-8:
+                masked_q /= (1 + 1e-5)
+            choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
+            # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
+            return choice
+        except:
+            print "strange error"
+            print "q_value:", q_values
+            print "mask:", self.mask
+            masked_q = np.zeros_like(q_values)
+            for i in range(len(q_values)):
+                if self.mask[i] == 0:
+                    masked_q[i] = q_values[i]
+            masked_q = masked_q / sum(masked_q)
+            print "masked_q:", masked_q
+            print np.random.multinomial(1, masked_q, size=1).tolist()[0]
+            assert 0

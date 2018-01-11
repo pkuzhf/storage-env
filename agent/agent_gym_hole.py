@@ -10,6 +10,7 @@ from collections import deque
 # from whca import WHCA
 from result_visualizer import ResultVisualizer
 from whca import WHCA
+from greedyastar import GreedyAstar
 import time
 
 
@@ -31,9 +32,10 @@ class AGENT_GYM(gym.Env):
         self.hole_reward = [0] * len(hole_pos)
         self.source_reward = [0] * len(source_pos)
         self.end_count = 0
-        if self.astar:
-            self.window = 9
-            self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
+        if self.use_astar:
+            self.astar = GreedyAstar(source_pos, hole_pos, self.hole_city, agent_num, self.trans)
+            # self.window = 9
+            # self.whca = WHCA(self.window, source_pos, hole_pos, self.hole_city, agent_num, [0, 1], self.trans)
         # self.package_nb_count = np.zeros((len(config.Map.city_dis)))
         # self.package_step_count = np.zeros((len(config.Map.city_dis)))
         # self.average_step = 15 * np.ones((len(config.Map.city_dis)))
@@ -53,7 +55,7 @@ class AGENT_GYM(gym.Env):
         self.hole_city = hole_city
         self.agent_num = agent_num
         self.city_dis = city_dis
-        self.astar = not no_astar  # default is use astar
+        self.use_astar = not no_astar  # default is use astar
 
         if trans is None:
             self.trans = np.zeros((config.Map.Width, config.Map.Height, 4))
@@ -93,9 +95,9 @@ class AGENT_GYM(gym.Env):
         pick_drop = 1
 
         agent_next_pos = []
-        if self.astar:
-            astar_action = self.whca.getJointAction(self.agent_pos, self.agent_city, [[-1,-1]]*len(action))
-
+        if self.use_astar:
+            # astar_action = self.whca.getJointAction(self.agent_pos, self.agent_city, [[-1,-1]]*len(action))
+            astar_action = self.astar.getJointAction(self.agent_pos, self.agent_city)
         done = [False] * len(action)
 
         self.steps += 1
@@ -103,7 +105,7 @@ class AGENT_GYM(gym.Env):
         # invalid
         for i in range(self.agent_num):
             pos = self.agent_pos[i]
-            if self.astar:
+            if self.use_astar:
                 a = astar_action[i]
             else:
                 a = dir[action[i]]
@@ -211,6 +213,7 @@ class AGENT_GYM(gym.Env):
 
                 self.source_reward[source_idx] += 1
                 rewards[i] += pick_drop
+                self.astar.end_update[i] = True
             elif pos in self.hole_pos and self.agent_city[i] != -1:  # hole
 
                 # self.package_nb_count[self.agent_city[i]]+=1
@@ -225,6 +228,7 @@ class AGENT_GYM(gym.Env):
                 self.hole_reward[hole_idx] += 1
                 pack_count[-1] = 1
                 rewards[i] += pick_drop
+                self.astar.end_update[i] = True
 
         for r0 in rewards:
             if r0 > 0:
@@ -232,7 +236,7 @@ class AGENT_GYM(gym.Env):
                 break
         self.end_count += 1
         self.time += 1
-        if self.time == self.total_time or self.end_count == 25:
+        if self.time == self.total_time or self.end_count == 100:
             done = True
             # for i in range(len(config.Map.city_dis)):
             #     if self.package_nb_count[i]==0:
