@@ -21,7 +21,13 @@ class GreedyAstar:
         self.source_hole_map = self.get_map()
         # self.distance = self.get_all_distance()
         if config.directions is None:
-            self.directions = self.getDirections()
+            print "start directions"
+            print hole_city[:10]
+            # self.directions = self.getDirections()
+
+            direc = open('directions.txt','r')
+            self.directions = np.array(eval(direc.readline()))
+            # direc.write(str(self.directions.tolist()))
             config.directions = copy.deepcopy(self.directions)
             print "finish directions"
         else:
@@ -57,6 +63,7 @@ class GreedyAstar:
         directions = -np.ones((config.Source_num+config.Hole_num, config.Map.Width, config.Map.Height),dtype=np.int32)
         queue = Queue.Queue(maxsize=config.Map.Width * config.Map.Height)
         for i in range(config.Source_num):
+            print "sources", i
             queue.put(self.source_pos[i])
             while not queue.empty():
                 current = queue.get()
@@ -69,6 +76,7 @@ class GreedyAstar:
                                 queue.put(next_pos)
 
         for i in range(config.Source_num,config.Source_num+config.Hole_num):
+            print "holes", i
             queue.put(self.hole_pos[i-config.Source_num])
             while not queue.empty():
                 current = queue.get()

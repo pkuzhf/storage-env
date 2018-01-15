@@ -2,11 +2,12 @@ import tensorflow as tf
 import numpy as np
 import random
 import config
+import time
 
 class pgAgent():
     def __init__(self, env, nb_action, nb_warm_up, policy, testPolicy, gamma, lr, memory_limit, batchsize, train_interval):
         np.random.seed(1234567)
-        tf.set_random_seed(1234567)
+        tf.set_random_seed(123)
 
         self.env = env
         self.nb_action = nb_action
@@ -50,12 +51,17 @@ class pgAgent():
             if done:
                 observation = self.env.reset()
 
+        self.env.reset()
+        time1 = time.time()
+        epi_rewards = open('episodes.txt','w')
+
         for i in range(nb_steps):
-            print "train step:", i
+            # print "train step:", i
             action = self.get_action(observation)
             self.ob, self.r, done, info = self.env.step(action)
             self.save_memory(self.ob, action, self.r, done, (i+1) % self.train_interval)
             if (i+1) % self.train_interval == 0:
+                print "train step:", i
                 batch_ob, batch_action, batch_reward = self.sample_memory(self.batch_size)
                 self.sess.run(self.train_op, feed_dict={
                     self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
@@ -64,6 +70,11 @@ class pgAgent():
                 })
                 print "mean reward: ", np.mean(batch_reward)
             if done:
+                print self.r
+                epi_rewards.write(str(self.r)+'\n')
+                epi_rewards.write(str(self.env.new_city_hole.tolist())+'\n')
+                print "round time:", (time.time() - time1)/60
+                time1 = time.time()
                 observation = self.env.reset()
 
     def test(self):

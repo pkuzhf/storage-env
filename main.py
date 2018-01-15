@@ -25,7 +25,9 @@ KTF.set_session(get_session())
 # TODO net + observation, new env, 2x4
 def main():
     np.random.seed(config.Game.Seed)
-
+    config.Type_num = len(config.Map.city_dis) + 1
+    config.Source_num = len(config.Map.source_pos)
+    config.Hole_num = len(config.Map.hole_pos)
     # dqn env part
     # ---------------------------------------------------------------------------
     env_gym = ENV_GYM_HOLE()
@@ -45,8 +47,8 @@ def main():
     # env_gym.seed(config.Game.Seed)
     # env = EnvPG(env_gym, nb_action=config.Map.Width*config.Map.Height*10, nb_warm_up=2000, policy=MultiDisPolicy(),
     #             testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=10000, batchsize=32, train_interval=8)
-    env = Env_PG_HOLE(env_gym, nb_action=len(config.Map.hole_pos), nb_warm_up=100, policy=MultiDisPolicy(),
-                      testPolicy=MultiDisPolicy(), gamma=1.01, lr=0.001, memory_limit=10000, batchsize=32,
+    env = Env_PG_HOLE(env_gym, nb_action=len(config.Map.hole_pos), nb_warm_up=len(config.Map.hole_pos), policy=MultiDisPolicy(),
+                      testPolicy=MultiDisPolicy(), gamma=1.0, lr=0.001, memory_limit=10000, batchsize=32,
                       train_interval=len(config.Map.hole_pos))
     # agent part
     # ---------------------------------------------------------------------------
@@ -92,7 +94,7 @@ def run_env_path(env, env_gym):
 
     for round in range(nround):
         print "------------------------------------------------------"
-        print('\n\nround train ' + str(round) + '/' + str(nround))
+        print('\n\n train ' + str(round) + '/' + str(nround))
         print "------------------------------------------------------"
         # env.fit(env_gym, nb_steps=1000, visualize=False, verbose=2)
         # env.fit(env_gym, nb_episodes=36, min_steps=80, visualize=False, verbose=2) # for dqn

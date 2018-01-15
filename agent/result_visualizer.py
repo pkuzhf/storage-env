@@ -214,7 +214,7 @@ class ResultVisualizer:
                 image = imageio.imread(dir+'/'+filename+str(i)+'.png')
                 writer.append_data(image)
 
-    def draw_log(self, pic_nb=99):
+    def draw_log(self, pic_nb=69):
         # self.draw_reward()
 
         log = open(self.directory + '/static_info', 'r')

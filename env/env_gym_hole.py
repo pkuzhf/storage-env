@@ -111,7 +111,7 @@ class ENV_GYM(gym.Env):
             if self.used_agent:
                 self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
             else:
-                if (self.episode_count)%75 == 0:
+                if (self.episode_count)%100 == 0:
                     self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
                     print self.new_city_hole
                 else:
