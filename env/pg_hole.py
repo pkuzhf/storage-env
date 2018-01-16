@@ -62,6 +62,7 @@ class pgAgent():
             self.save_memory(self.ob, action, self.r, done, (i+1) % self.train_interval)
             if (i+1) % self.train_interval == 0:
                 print "train step:", i
+                # print "before bp time:", (time.time() - time1) / 60
                 batch_ob, batch_action, batch_reward = self.sample_memory(self.batch_size)
                 self.sess.run(self.train_op, feed_dict={
                     self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
@@ -142,7 +143,7 @@ class pgAgent():
             self.tf_vt = tf.placeholder(tf.float32, [None, ], name="actions_value")
 
 
-        reshape_ob = tf.reshape(self.tf_obs,[-1, 4, 5, len(config.Map.city_dis)])
+        reshape_ob = tf.reshape(self.tf_obs,[-1, 14, 15, len(config.Map.city_dis)])
 
         # conv1
         conv1 = tf.layers.conv2d(
@@ -162,7 +163,7 @@ class pgAgent():
             activation=tf.sigmoid
         )
 
-        reshape_conv2 = tf.reshape(conv2, [-1, 4*5, 32])
+        reshape_conv2 = tf.reshape(conv2, [-1, 210, 32])
 
         # fc1
         layer = tf.layers.dense(
@@ -173,7 +174,7 @@ class pgAgent():
             bias_initializer=tf.constant_initializer(0.1),
             name='fc1'
         )
-        flat_layer = tf.reshape(layer, [-1, 4 * 5 * 10])
+        flat_layer = tf.reshape(layer, [-1, 210 * 10])
         # fc2
         all_act = tf.layers.dense(
             inputs=flat_layer,

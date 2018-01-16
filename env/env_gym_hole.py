@@ -97,28 +97,36 @@ class ENV_GYM(gym.Env):
         agent_gym.agent = self.agent
         agent_gym.reset()
 
+        if -1 in self.new_city_hole:
+            print "fatal problem! hole not fully assigned!"
+            print self.gamestep
+            print self.gamestep % 210
+            print "hole", self.new_city_hole
+            print "mask", self.mask
+            assert 0
+
         self.episode_count += 1
 
         self.agent.reward_his.clear()
         # we do not reset the agent network, to accelerate the training.
-        while True:
-            if self.used_agent:
-                self.agent.fit(agent_gym, nb_steps=10000, log_interval=10000, verbose=2)
-            self.agent.reward_his.clear()
-            testlogger = [myTestLogger()]
-            self.agent.test_reward_his.clear()
-            # print mazemap
-            if self.used_agent:
-                self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
+
+        if self.used_agent:
+            self.agent.fit(agent_gym, nb_steps=10000, log_interval=10000, verbose=2)
+        self.agent.reward_his.clear()
+        testlogger = [myTestLogger()]
+        self.agent.test_reward_his.clear()
+        # print mazemap
+        if self.used_agent:
+            self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
+        else:
+            if (self.episode_count)%100 == 0:
+                self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
+                print self.new_city_hole
             else:
-                if (self.episode_count)%100 == 0:
-                    self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
-                    print self.new_city_hole
-                else:
-                    self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
-                    print self.new_city_hole
-            self.hole_reward = agent_gym.hole_reward
-            return np.mean(self.agent.test_reward_his)/10
+                self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
+                # print self.new_city_hole
+        self.hole_reward = agent_gym.hole_reward
+        return np.mean(self.agent.test_reward_his)/10
 
     def get_mask(self):
         return self.mask

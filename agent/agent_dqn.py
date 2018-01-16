@@ -426,9 +426,10 @@ class DQNAgent(AbstractDQNAgent):
 
             # Obtain the initial observation by resetting the environment.
             self.reset_states()
-            observation = deepcopy(env.reset())
-            if self.processor is not None:
-                observation = self.processor.process_observation(observation)
+            # observation = deepcopy(env.reset())
+            # if self.processor is not None:
+            #     observation = self.processor.process_observation(observation)
+            observation = env.reset()
             assert observation is not None
 
             # Run the episode until we're done.
@@ -444,9 +445,9 @@ class DQNAgent(AbstractDQNAgent):
                 for _ in range(action_repetition):
                     callbacks.on_action_begin(action)
                     observation, r, d, info = env.step(action)
-                    observation = deepcopy(observation)
-                    if self.processor is not None:
-                        observation, r, d, info = self.processor.process_step(observation, r, d, info)
+                    # observation = deepcopy(observation)
+                    # if self.processor is not None:
+                    #     observation, r, d, info = self.processor.process_step(observation, r, d, info)
                     callbacks.on_action_end(action)
                     reward += r
 
@@ -461,7 +462,7 @@ class DQNAgent(AbstractDQNAgent):
                         break
                 if nb_max_episode_steps and episode_step >= nb_max_episode_steps - 1:
                     done = True
-                self.backward(reward, terminal=done)
+                # self.backward(reward, terminal=done)
                 episode_reward += reward
 
                 step_logs = {
@@ -480,8 +481,8 @@ class DQNAgent(AbstractDQNAgent):
             # resetting the environment. We need to pass in `terminal=False` here since
             # the *next* state, that is the state of the newly reset environment, is
             # always non-terminal by convention.
-            if episode_step < 999:
-                episode_reward -= 24 * np.ones((self.agent_num, ))
+            if episode_step < 300:
+                episode_reward -= 8 * np.ones((self.agent_num, ))
 
             self.test_reward_his.append(episode_reward)
             self.forward(observation)
@@ -559,9 +560,10 @@ class DQNAgent(AbstractDQNAgent):
 
                     # Obtain the initial observation by resetting the environment.
                     self.reset_states()
-                    observation = deepcopy(env.reset())
-                    if self.processor is not None:
-                        observation = self.processor.process_observation(observation)
+                    # observation = deepcopy(env.reset())
+                    # if self.processor is not None:
+                    #     observation = self.processor.process_observation(observation)
+                    observation = env.reset()
                     assert observation is not None
 
                     # Perform random starts at beginning of episode and do not record them into the experience.
@@ -576,15 +578,16 @@ class DQNAgent(AbstractDQNAgent):
                             action = self.processor.process_action(action)
                         callbacks.on_action_begin(action)
                         observation, reward, done, info = env.step(action)
-                        observation = deepcopy(observation)
-                        if self.processor is not None:
-                            observation, reward, done, info = self.processor.process_step(observation, reward, done, info)
+                        # observation = deepcopy(observation)
+                        # if self.processor is not None:
+                        #     observation, reward, done, info = self.processor.process_step(observation, reward, done, info)
                         callbacks.on_action_end(action)
                         if done:
                             warnings.warn('Env ended before {} random steps could be performed at the start. You should probably lower the `nb_max_start_steps` parameter.'.format(nb_random_start_steps))
-                            observation = deepcopy(env.reset())
-                            if self.processor is not None:
-                                observation = self.processor.process_observation(observation)
+                            # observation = deepcopy(env.reset())
+                            # if self.processor is not None:
+                            #     observation = self.processor.process_observation(observation)
+                            observation = env.reset()
                             break
 
                 # At this point, we expect to be fully initialized.

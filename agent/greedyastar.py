@@ -22,7 +22,6 @@ class GreedyAstar:
         # self.distance = self.get_all_distance()
         if config.directions is None:
             print "start directions"
-            print hole_city[:10]
             # self.directions = self.getDirections()
 
             direc = open('directions.txt','r')
@@ -42,6 +41,12 @@ class GreedyAstar:
         self.dis_average = np.zeros((config.Source_num, config.Hole_num, 2))
         self.step_count = np.zeros((self.agent_num,))
         self.init_distance()
+
+        self.hole_pos_map = {}
+        for i in range(-1,len(config.Map.city_dis)):
+            self.hole_pos_map[i] = []
+        for i in range(config.Hole_num):
+            self.hole_pos_map[self.hole_city[i]].append(i)
 
     def init_distance(self):
         for i in range(config.Source_num):
@@ -160,8 +165,9 @@ class GreedyAstar:
                 else:
                     # print "find hole", i
                     # print self.start_pos[i]
-                    for j in range(config.Hole_num):
-                        if self.hole_city[j] == self.agent_city[i] and self.dis_average[self.start_pos[i]][j][1] < min_dis:
+                    target_map = self.hole_pos_map[self.agent_city[i]]
+                    for j in target_map:
+                        if self.dis_average[self.start_pos[i]][j][1] < min_dis:
                             min_dis = self.dis_average[self.start_pos[i]][j][1]
                             min_index = j
                     self.end_pos[i] = min_index + config.Source_num
@@ -206,6 +212,7 @@ class GreedyAstar:
                 self.fun(done, i, new_pos, agents_pos, agent_map)
 
         # print done
+        return agents_pos
         action = []
         for i in range(self.agent_num):
             action.append([agents_pos[i][0]-self.agent_pos[i][0], agents_pos[i][1]-self.agent_pos[i][1]])

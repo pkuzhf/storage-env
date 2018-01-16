@@ -60,7 +60,7 @@ def main():
     memory = SequentialMemory(limit=400000, window_length=4)
     policy = EpsGreedyQPolicy(eps=0.1, end_eps=0.1, steps=1000)
     policy2 = GreedyQPolicy2D()
-    agent_model = get_agent_net()
+    agent_model = get_fake_agent_net()
     agent = AgentDQN(model=agent_model, nb_actions=config.Game.AgentAction, policy=policy, memory=memory,
                nb_steps_warmup=1000, gamma=.95, target_model_update=5000,
                train_interval=4, delta_clip=1., test_policy=policy2, agent_num=config.Game.AgentNum)
@@ -98,14 +98,14 @@ def run_env_path(env, env_gym):
         print "------------------------------------------------------"
         # env.fit(env_gym, nb_steps=1000, visualize=False, verbose=2)
         # env.fit(env_gym, nb_episodes=36, min_steps=80, visualize=False, verbose=2) # for dqn
-        env.fit(40000)
+        env.fit(120000)
         # env.nb_steps_warmup = 0
         # env.test(env_gym, nb_episodes=1, visualize=False, verbose=2) # for dqn
-        env.test()
+        # env.test()
         # env_gym.best_by_tree()
         # env.save_weights(model_folder + '/generator_model_weights_{}.h5f'.format(str(round)), overwrite=True)
 
 
 if __name__ == "__main__":
-    #main()
-    profile.run("main()", sort=1)
+    main()
+    # profile.run("main()", sort=1)
