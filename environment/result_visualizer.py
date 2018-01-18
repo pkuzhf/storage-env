@@ -244,7 +244,7 @@ class ResultVisualizer:
             old_agent_pos = agent_pos
             # old_agent_city = agent_city
 
-            for j in range(199):
+            for j in range(99):
                 step += 1
                 agent_reward = eval(log.readline())
                 source_reward = eval(log.readline())
@@ -266,7 +266,7 @@ class ResultVisualizer:
 
             log.close()
             try:
-                self.save_mp4(self.directory+"/pics/"+file, "demo", 399)
+                self.save_mp4(self.directory+"/pics/"+file, "demo", 199)
             except:
                 pass
 

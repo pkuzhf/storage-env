@@ -21,7 +21,12 @@ class GreedyAstar:
         self.source_hole_map = self.get_map()
         # self.distance = self.get_all_distance()
         if config.directions is None:
-            self.directions = self.getDirections()
+            print "start directions"
+            # self.directions = self.getDirections()
+
+            direc = open('directions.txt','r')
+            self.directions = np.array(eval(direc.readline()))
+            # direc.write(str(self.directions.tolist()))
             config.directions = copy.deepcopy(self.directions)
             print "finish directions"
         else:
