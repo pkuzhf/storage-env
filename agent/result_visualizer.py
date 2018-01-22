@@ -48,7 +48,7 @@ class ResultVisualizer:
         static_info.write(str(self.city_dis) + '\n')
         static_info.write(str(self.source_pos) + '\n')
         static_info.write(str(self.hole_pos) + '\n')
-        if isinstance(self.trans, list):
+        if isinstance(self.hole_city, list):
             static_info.write(str(self.hole_city) + '\n')
         else:
             static_info.write(str(self.hole_city.tolist()) + '\n')

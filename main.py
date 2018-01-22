@@ -47,9 +47,9 @@ def main():
     # env_gym.seed(config.Game.Seed)
     # env = EnvPG(env_gym, nb_action=config.Map.Width*config.Map.Height*10, nb_warm_up=2000, policy=MultiDisPolicy(),
     #             testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=10000, batchsize=32, train_interval=8)
-    env = Env_PG_HOLE(env_gym, nb_action=len(config.Map.hole_pos), nb_warm_up=len(config.Map.hole_pos), policy=MultiDisPolicy(),
-                      testPolicy=MultiDisPolicy(), gamma=1.0, lr=0.001, memory_limit=10000, batchsize=32,
-                      train_interval=len(config.Map.hole_pos))
+    env = Env_PG_HOLE(env_gym, nb_action=len(config.Map.city_dis), nb_warm_up=len(config.Map.hole_pos),
+                      policy=MultiDisPolicy(), testPolicy=MultiDisPolicy(), gamma=1.0, lr=0.0001, memory_limit=100000,
+                      batchsize=32, train_interval=len(config.Map.hole_pos))
     # agent part
     # ---------------------------------------------------------------------------
     # agent_gym = AGENT_GYM_HOLE(config.Map.source_pos, config.Map.hole_pos,
@@ -92,16 +92,16 @@ def run_env_path(env, env_gym):
     makedirs(config.Path.Logs)
     makedirs(config.Path.Figs)
 
-    for round in range(nround):
+    for round in range(100):
         print "------------------------------------------------------"
         print('\n\n train ' + str(round) + '/' + str(nround))
         print "------------------------------------------------------"
         # env.fit(env_gym, nb_steps=1000, visualize=False, verbose=2)
         # env.fit(env_gym, nb_episodes=36, min_steps=80, visualize=False, verbose=2) # for dqn
-        env.fit(120000)
+        env.fit(42000)
         # env.nb_steps_warmup = 0
         # env.test(env_gym, nb_episodes=1, visualize=False, verbose=2) # for dqn
-        # env.test()
+        env.test()
         # env_gym.best_by_tree()
         # env.save_weights(model_folder + '/generator_model_weights_{}.h5f'.format(str(round)), overwrite=True)
 

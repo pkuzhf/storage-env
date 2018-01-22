@@ -297,6 +297,19 @@ class GreedyQPolicy2D(Policy):
 class MultiDisPolicy(Policy):
     def select_action(self, q_values):
         # print "distribution", q_values
+        while np.sum(q_values) > 1 - 1e-8:
+            q_values /= (1 + 1e-5)
+        # choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
+        choice = np.random.choice(range(len(q_values)), p=q_values)
+        # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
+        if max(q_values) > 0.8:
+            print "max p:", max(q_values)
+        return choice
+
+
+class MaskedMultiDisPolicy(Policy):
+    def select_action(self, q_values):
+        # print "distribution", q_values
         try:
             masked_q = np.zeros_like(q_values)
             for i in range(len(q_values)):
@@ -304,7 +317,7 @@ class MultiDisPolicy(Policy):
                     masked_q[i]=q_values[i]
             masked_q = masked_q/np.sum(masked_q)
             if not np.isfinite(q_values).all() or not np.isfinite(masked_q).all():
-                print "got warning"
+                # print "got warning"
                 # print "q:", q_values
                 # print q_values.dtype
                 # print self.mask
@@ -326,6 +339,8 @@ class MultiDisPolicy(Policy):
             # choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
             choice = np.random.choice(range(config.Hole_num), p=masked_q)
             # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
+            if max(q_values) > 0.5:
+                print "max p:", max(q_values)
             return choice
         except:
             print "strange error"

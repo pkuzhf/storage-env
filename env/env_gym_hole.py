@@ -12,6 +12,7 @@ from agent.agent_gym_hole import AGENT_GYM as AGENT_GYM_HOLE
 from policy import *
 from myCallback import myTestLogger
 from mcts import MyMCTS
+import numpy as np
 
 class ENV_GYM(gym.Env):
 
@@ -40,9 +41,9 @@ class ENV_GYM(gym.Env):
 
         self.used_agent = False
 
-        self.new_city_hole = -np.ones((len(config.Map.hole_pos)), dtype=np.int8)
-        self.onehot_city_hole = np.zeros((len(config.Map.hole_pos), len(config.Map.city_dis)), dtype=np.int8)
-        self.mask = np.zeros((len(config.Map.hole_pos)), dtype=np.int8)
+        self.new_city_hole = np.zeros((config.Hole_num))
+        self.onehot_city_hole = np.zeros((config.Hole_num, len(config.Map.city_dis) ))
+
         trans = np.ones((config.Map.Width, config.Map.Height, 4), dtype=np.int8)
         for i in range(0, config.Map.Width):
             for j in range(0, config.Map.Height):
@@ -61,9 +62,8 @@ class ENV_GYM(gym.Env):
         self.gamestep = 0
         self.invalid_count = 0
         self.conflict_count = 0
-        self.new_city_hole = -np.ones((len(config.Map.hole_pos)), dtype=np.int8)
-        self.onehot_city_hole = np.zeros((len(config.Map.hole_pos), len(config.Map.city_dis)), dtype=np.int8)
-        self.mask = np.zeros((len(config.Map.hole_pos)), dtype=np.int8)
+        self.new_city_hole = np.zeros((config.Hole_num))
+        self.onehot_city_hole = np.zeros((config.Hole_num, len(config.Map.city_dis) ))
         return self.onehot_city_hole
 
     def _seed(self, seed=None):
@@ -74,9 +74,8 @@ class ENV_GYM(gym.Env):
         # print "action:", action
         done = (self.gamestep == (len(config.Map.hole_pos)-1))
 
-        self.new_city_hole[action] = config.Map.hole_city[self.gamestep]
-        self.mask[action] = 1
-        self.onehot_city_hole[action][config.Map.hole_city[self.gamestep]] = 1
+        self.new_city_hole[self.gamestep] = action
+        self.onehot_city_hole[self.gamestep][action] = 1
 
         self.step_count += 1
         self.gamestep += 1
@@ -85,6 +84,10 @@ class ENV_GYM(gym.Env):
             print "total time:", (time.time() - self.start_time) / 60
             print "env reward:", reward*10
         else:
+            # while len(self.new_city_hole)<len(config.Map.hole_pos):
+            #     self.new_city_hole.append(np.random.choice(range(len(config.Map.city_dis))))
+            # reward = self._get_reward_from_agent()
+            # self.new_city_hole = self.new_city_hole[:self.gamestep]
             reward = 0
 
         return self.onehot_city_hole, reward, done, {}
@@ -119,14 +122,11 @@ class ENV_GYM(gym.Env):
         if self.used_agent:
             self.agent.test(agent_gym, nb_episodes=2, visualize=False, callbacks=testlogger, verbose=0)
         else:
-            if (self.episode_count)%100 == 0:
+            if (self.episode_count)%10000 == 0:
                 self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=-1)
-                print self.new_city_hole
+                print self.new_city_hole.tolist()
             else:
                 self.agent.test(agent_gym, nb_episodes=1, visualize=False, callbacks=testlogger, verbose=0)
                 # print self.new_city_hole
         self.hole_reward = agent_gym.hole_reward
-        return np.mean(self.agent.test_reward_his)/10
-
-    def get_mask(self):
-        return self.mask
+        return np.mean(self.agent.test_reward_his)/100
