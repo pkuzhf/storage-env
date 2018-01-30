@@ -1,6 +1,7 @@
 from __future__ import division
 from rl.util import *
 import config
+import time
 
 class Policy(object):
 
@@ -302,55 +303,56 @@ class MultiDisPolicy(Policy):
         # choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
         choice = np.random.choice(range(len(q_values)), p=q_values)
         # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
-        if max(q_values) > 0.8:
-            print "max p:", max(q_values)
+        if max(q_values) > 0.2:
+            print "max p:", max(q_values), np.argmax(q_values)
         return choice
+
+class MultiDisPolicy2D(Policy):
+    def select_action(self, q_values):
+        # print "distribution", q_values
+        choices = []
+        for i in range(config.nb_exchange):
+            while np.sum(q_values[i]) > 1 - 1e-8:
+                q_values[i] /= (1 + 1e-5)
+            # choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
+            choice = np.random.choice(range(len(q_values[i])), p=q_values[i])
+            choices.append(choice)
+            # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
+            if max(q_values[i]) > 0.5:
+                print "max p:", i, max(q_values[i]), np.argmax(q_values[i])
+        # print q_values[0][:6]
+        return choices
 
 
 class MaskedMultiDisPolicy(Policy):
     def select_action(self, q_values):
         # print "distribution", q_values
-        try:
-            masked_q = np.zeros_like(q_values)
+        masked_q = q_values * self.mask
+        masked_q = masked_q/np.sum(masked_q)
+        if not np.isfinite(q_values).all() or not np.isfinite(masked_q).all():
+            # print "got warning"
+            # print "q:", q_values
+            # print q_values.dtype
+            # print self.mask
+            # print "sum:", np.sum(masked_q)
+            # print "mask_q1:", masked_q
+            # print "mask_q2:", masked_q1
             for i in range(len(q_values)):
-                if self.mask[i]==0:
-                    masked_q[i]=q_values[i]
-            masked_q = masked_q/np.sum(masked_q)
-            if not np.isfinite(q_values).all() or not np.isfinite(masked_q).all():
-                # print "got warning"
-                # print "q:", q_values
-                # print q_values.dtype
-                # print self.mask
-                # print "sum:", np.sum(masked_q)
-                # print "mask_q1:", masked_q
-                # print "mask_q2:", masked_q1
-                for i in range(len(q_values)):
-                    if self.mask[i] == 0:
-                        masked_q[i] = 1.0
-                        # print '0?',i, q_values[i]
-                    else:
-                        masked_q[i] = 0
-                # print masked_q
-                # assert 0
-                masked_q = masked_q / np.sum(masked_q)
-
-            while np.sum(masked_q) > 1 - 1e-8:
-                masked_q /= (1 + 1e-5)
-            # choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
-            choice = np.random.choice(range(config.Hole_num), p=masked_q)
-            # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
-            if max(q_values) > 0.5:
-                print "max p:", max(q_values)
-            return choice
-        except:
-            print "strange error"
-            # print "q_value:", q_values
-            print "mask:", 0 in self.mask
-            masked_q = np.zeros_like(q_values)
-            for i in range(len(q_values)):
-                if self.mask[i] == 0:
-                    masked_q[i] = q_values[i]
+                if self.mask[i] == 1:
+                    masked_q[i] = 1.0
+                    # print '0?',i, q_values[i]
+                else:
+                    masked_q[i] = 0
+            # print masked_q
+            # assert 0
             masked_q = masked_q / np.sum(masked_q)
-            print "masked_q:", masked_q[:20]
-            print np.random.choice(range(config.Hole_num), p=masked_q)
-            assert 0
+
+        # while np.sum(masked_q) > 1 - 1e-8:
+        #     masked_q /= (1 + 1e-5)
+        # choice = np.random.multinomial(1, masked_q, size=1).tolist()[0].index(1)
+        choice = np.random.choice(range(config.Hole_num), p=masked_q)
+        # print choice, q_values[choice], np.argmax(q_values), np.max(q_values)
+        if max(q_values) > 0.8:
+            print "max p:", max(q_values), np.argmax(q_values)
+        # print q_values
+        return choice

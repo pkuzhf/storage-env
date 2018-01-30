@@ -4,20 +4,16 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "" #0, 1, 2, 3, 4, 5, 6, 7"
 
 import profile
 from utils import *
-from env.env_net import *
-from env.env_gym import ENV_GYM
-from env.env_gym_hole import ENV_GYM as ENV_GYM_HOLE
-from env.env_pg_gym import ENV_GYM as ENV_PG_GYM
+from env.env_gym_exchange import ENV_GYM as ENV_GYM_HOLE
 from env.mydqn import myDQNAgent as EnvDQN
-from env.homemadepg import pgAgent as EnvPG
-from env.pg_hole import pgAgent as Env_PG_HOLE
+from env.pg_exchange import pgAgent as Env_PG_HOLE
 from agent.agent_net import *
-from agent.agent_gym import AGENT_GYM
-from agent.agent_gym_hole import AGENT_GYM as AGENT_GYM_HOLE
+from agent.agent_gym_exchange import AGENT_GYM as AGENT_GYM_HOLE
 from agent.agent_dqn import DQNAgent as AgentDQN
 from keras.optimizers import *
 from policy import *
 from rl.memory import SequentialMemory
+import config
 
 import keras.backend.tensorflow_backend as KTF
 KTF.set_session(get_session())
@@ -47,9 +43,10 @@ def main():
     # env_gym.seed(config.Game.Seed)
     # env = EnvPG(env_gym, nb_action=config.Map.Width*config.Map.Height*10, nb_warm_up=2000, policy=MultiDisPolicy(),
     #             testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=10000, batchsize=32, train_interval=8)
-    env = Env_PG_HOLE(env_gym, nb_action=len(config.Map.city_dis), nb_warm_up=len(config.Map.hole_pos),
-                      policy=MultiDisPolicy(), testPolicy=MultiDisPolicy(), gamma=1.0, lr=0.0001, memory_limit=100000,
-                      batchsize=32, train_interval=len(config.Map.hole_pos))
+    env = Env_PG_HOLE(env_gym, nb_action=config.Hole_num, nb_warm_up=10,
+                      policy=MaskedMultiDisPolicy(), testPolicy=MaskedMultiDisPolicy(), gamma=1.0, lr=0.001,
+                      memory_limit=config.Hole_num * 400, batchsize=64, train_interval=len(config.Map.hole_pos),
+                      pre_train_epis=300)
     # agent part
     # ---------------------------------------------------------------------------
     # agent_gym = AGENT_GYM_HOLE(config.Map.source_pos, config.Map.hole_pos,
@@ -92,13 +89,13 @@ def run_env_path(env, env_gym):
     makedirs(config.Path.Logs)
     makedirs(config.Path.Figs)
 
-    for round in range(100):
+    for round in range(1000):
         print "------------------------------------------------------"
         print('\n\n train ' + str(round) + '/' + str(nround))
         print "------------------------------------------------------"
         # env.fit(env_gym, nb_steps=1000, visualize=False, verbose=2)
         # env.fit(env_gym, nb_episodes=36, min_steps=80, visualize=False, verbose=2) # for dqn
-        env.fit(42000)
+        env.fit(500)
         # env.nb_steps_warmup = 0
         # env.test(env_gym, nb_episodes=1, visualize=False, verbose=2) # for dqn
         env.test()

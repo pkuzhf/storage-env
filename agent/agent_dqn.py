@@ -484,7 +484,7 @@ class DQNAgent(AbstractDQNAgent):
             if episode_step < 300:
                 episode_reward -= 8 * np.ones((self.agent_num, ))
 
-            self.test_reward_his.append(episode_reward)
+            self.test_reward_his.append(np.sum(episode_reward))
             self.forward(observation)
             self.backward(0., terminal=False)
 
