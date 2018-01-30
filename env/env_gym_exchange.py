@@ -126,7 +126,7 @@ class ENV_GYM(gym.Env):
                 v = 0
                 for i in range(10):
                     # v2 = 1280.0/self.get_hole_dis(self.random_fill())
-                    v2 = self._get_reward_from_distance(self.random_fill())
+                    v2 = self.get_reward_from_distance(self.random_fill())
                     if v2>v:
                         v = v2
                 # print "v:", v, self.gamestep, self.current_city
