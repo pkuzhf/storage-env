@@ -116,7 +116,7 @@ class ENV_GYM(gym.Env):
                     v = v2
             print "total time:", (time.time() - self.start_time) / 60
             print "env reward:", reward
-            return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, v
+            return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, 0
         else:
             # while len(self.new_hole_city)<len(config.Map.hole_pos):
             #     self.new_hole_city.append(np.random.choice(range(len(config.Map.city_dis))))
