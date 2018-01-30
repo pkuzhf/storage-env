@@ -107,10 +107,16 @@ class ENV_GYM(gym.Env):
         if done:
             # reward, hole_reward = self._get_reward_from_agent()
             reward = self.get_reward_from_distance(self.random_fill())
-            v = 1280.0/self.get_hole_dis(self.random_fill())
+            # v = 1280.0/self.get_hole_dis(self.random_fill())
+            v = 0
+            for i in range(5):
+                # v2 = 1280.0 / self.get_hole_dis(self.random_fill())
+                v2 = self.get_reward_from_distance(self.random_fill())
+                if v2 > v:
+                    v = v2
             print "total time:", (time.time() - self.start_time) / 60
             print "env reward:", reward
-            return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, 0
+            return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, v
         else:
             # while len(self.new_hole_city)<len(config.Map.hole_pos):
             #     self.new_hole_city.append(np.random.choice(range(len(config.Map.city_dis))))
@@ -119,7 +125,8 @@ class ENV_GYM(gym.Env):
             if self.gamestep in self.switch:
                 v = 0
                 for i in range(10):
-                    v2 = 1280.0/self.get_hole_dis(self.random_fill())
+                    # v2 = 1280.0/self.get_hole_dis(self.random_fill())
+                    v2 = self._get_reward_from_distance(self.random_fill())
                     if v2>v:
                         v = v2
                 # print "v:", v, self.gamestep, self.current_city
@@ -127,12 +134,12 @@ class ENV_GYM(gym.Env):
                 v = 0
             reward = 0
 
-        return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, 0
+        return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, v
 
-    def _get_reward_from_agent(self):
+    def _get_reward_from_agent(self, city_hole):
         # if want to enable DQN agent, change self.use_agent to True
         agent_gym = AGENT_GYM_HOLE(config.Map.source_pos, config.Map.hole_pos, config.Game.AgentNum, config.Game.total_time,
-                              self.new_hole_city, config.Map.city_dis, self.trans, self.used_agent)
+                                   city_hole, config.Map.city_dis, self.trans, self.used_agent)
         agent_gym.agent = self.agent
         agent_gym.reset()
 

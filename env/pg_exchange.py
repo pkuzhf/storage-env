@@ -173,7 +173,7 @@ class pgAgent():
             # batch_ob[i] = self.memory[0][0]
             # batch_action[i] = 1
             # batch_reward[i] = 10
-        print batch_reward
+        # print batch_reward
 
         return batch_ob, batch_action, batch_reward
 
