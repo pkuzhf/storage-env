@@ -44,9 +44,9 @@ def main():
     # env = EnvPG(env_gym, nb_action=config.Map.Width*config.Map.Height*10, nb_warm_up=2000, policy=MultiDisPolicy(),
     #             testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=10000, batchsize=32, train_interval=8)
     env = Env_PG_HOLE(env_gym, nb_action=config.Hole_num, nb_warm_up=10,
-                      policy=MaskedMultiDisPolicy(), testPolicy=MaskedMultiDisPolicy(), gamma=1.0, lr=0.001,
+                      policy=MaskedMultiDisPolicy(), testPolicy=MaskedMultiDisPolicy(), gamma=1.0, lr=0.0001,
                       memory_limit=config.Hole_num * 400, batchsize=16, train_interval=len(config.Map.hole_pos),
-                      pre_train_epis=300)
+                      pre_train_epis=0)
     # agent part
     # ---------------------------------------------------------------------------
     # agent_gym = AGENT_GYM_HOLE(config.Map.source_pos, config.Map.hole_pos,
