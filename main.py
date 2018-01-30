@@ -45,7 +45,7 @@ def main():
     #             testPolicy=MultiDisPolicy(), gamma=0.95, lr=0.00005, memory_limit=10000, batchsize=32, train_interval=8)
     env = Env_PG_HOLE(env_gym, nb_action=config.Hole_num, nb_warm_up=10,
                       policy=MaskedMultiDisPolicy(), testPolicy=MaskedMultiDisPolicy(), gamma=1.0, lr=0.001,
-                      memory_limit=config.Hole_num * 400, batchsize=64, train_interval=len(config.Map.hole_pos),
+                      memory_limit=config.Hole_num * 400, batchsize=16, train_interval=len(config.Map.hole_pos),
                       pre_train_epis=300)
     # agent part
     # ---------------------------------------------------------------------------
