@@ -36,7 +36,6 @@ class ENV_GYM(gym.Env):
         self.agent = None
         self.gamestep = 0
         self.hole_reward = None
-        self.step_count = 0
         self.episode_count = 1
 
         self.used_agent = False
@@ -67,9 +66,10 @@ class ENV_GYM(gym.Env):
         self.assigning = np.zeros((self.nb_hole, ), dtype=np.int32)
         self.occupied = np.zeros((self.nb_hole, ), dtype=np.int32)
         self.new_hole_city = self.nb_city * np.ones((self.nb_hole, ), dtype=np.int32)
-        self.switch = [6,12,16,20,23]
+        # TODO problem
+        self.switch = [6, 11, 15, 18]
 
-        self.mask = np.zeros((self.nb_hole, ), dtype=np.int32)
+        self.mask = np.ones((self.nb_hole, ), dtype=np.int32)
 
     def _reset(self):
         self.gamestep = 0
@@ -94,35 +94,26 @@ class ENV_GYM(gym.Env):
             self.current_city += 1
             self.occupied += self.assigning
             self.assigning = np.zeros((self.nb_hole,), dtype=np.int32)
-        else:
-            self.assigning[action] = 1
-            self.new_hole_city[action] = self.current_city
-            self.mask[action] = 0
 
-        done = (self.gamestep==self.nb_hole or self.current_city == self.nb_city)
+        done = (self.gamestep == self.nb_hole - 1)
 
-        self.gamestep += 1
-        self.step_count += 1
+        self.assigning[action] = 1
+        self.new_hole_city[action] = self.current_city
+        self.mask[action] = 0
 
         if done:
             # reward, hole_reward = self._get_reward_from_agent()
             reward = self.get_reward_from_distance(self.random_fill())
-            # v = 1280.0/self.get_hole_dis(self.random_fill())
-            v = 0
-            for i in range(5):
-                # v2 = 1280.0 / self.get_hole_dis(self.random_fill())
-                v2 = self.get_reward_from_distance(self.random_fill())
-                if v2 > v:
-                    v = v2
+            v = self.get_reward_from_distance(self.random_fill())
             print "total time:", (time.time() - self.start_time) / 60
             print "env reward:", reward
-            return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, 0
+            return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, v
         else:
             # while len(self.new_hole_city)<len(config.Map.hole_pos):
             #     self.new_hole_city.append(np.random.choice(range(len(config.Map.city_dis))))
             # reward = self._get_reward_from_agent()
             # self.new_hole_city = self.new_hole_city[:self.gamestep]
-            if self.gamestep in self.switch:
+            if self.gamestep+1 in self.switch:
                 v = 0
                 for i in range(10):
                     # v2 = 1280.0/self.get_hole_dis(self.random_fill())
@@ -134,6 +125,7 @@ class ENV_GYM(gym.Env):
                 v = 0
             reward = 0
 
+        self.gamestep += 1
         return np.array([self.assigning, self.occupied], dtype=np.int32), reward, done, v
 
     def _get_reward_from_agent(self, city_hole):
@@ -175,36 +167,32 @@ class ENV_GYM(gym.Env):
         return np.mean(self.agent.test_reward_his)/1000, np.array(agent_gym.hole_reward)/1000
 
     def get_reward_from_distance(self, city_hole):
-        mins = 50 * np.ones((config.Source_num, self.nb_city))
+        max_distance = 50
+        mins = max_distance * np.ones((config.Source_num, self.nb_city))
         for i in range(config.Source_num):
             for j in range(config.Hole_num):
                 new_dis = self.distance[i][j]
-                if mins[i][city_hole[j]] == 0 or new_dis<mins[i][city_hole[j]]:
+                if new_dis<mins[i][city_hole[j]]:
                     mins[i][city_hole[j]] = new_dis
             mins[i] *= self.np_city_dis
-        return 200 - np.sum(mins)
-
-    def get_hole_dis(self, city_hole):
-        mins = 50 * np.ones((config.Source_num, self.nb_city))
-        for i in range(config.Source_num):
-            for j in range(config.Hole_num):
-                new_dis = self.distance[i][j]
-                if mins[i][city_hole[j]] == 0 or new_dis < mins[i][city_hole[j]]:
-                    mins[i][city_hole[j]] = new_dis
-        diss = np.zeros((self.nb_city))
-        for i in range(len(config.Map.source_pos)):
-            for j in range(self.nb_city):
-                diss[j] += mins[i][j]
-        diss = diss/len(config.Map.source_pos)
-        diss *= self.np_city_dis
-        return np.sum(diss)
+        avg_dis = np.sum(mins) / config.Source_num
+        total_step = config.Game.AgentNum * config.Game.total_time
+        return total_step / avg_dis
 
     def random_fill(self):
         filled_city = np.zeros((self.nb_hole), dtype=np.int32)
+        empty_hole = []
         for i in range(self.nb_hole):
             if self.new_hole_city[i]<self.nb_city:
                 filled_city[i] = self.new_hole_city[i]
             else:
-                if self.current_city<self.nb_city-1:
-                    filled_city[i] = np.random.choice(range(self.current_city,self.nb_city))
+                empty_hole.append(i)
+        current_city = 0
+        for i in range(0, self.nb_hole):
+            if i in self.switch:
+                current_city += 1
+            if i > self.gamestep and current_city < self.nb_city:
+                hole_id = np.random.randint(len(empty_hole))
+                filled_city[hole_id] = current_city
+                del empty_hole[hole_id]
         return filled_city
