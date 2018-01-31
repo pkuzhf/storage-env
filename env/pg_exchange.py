@@ -40,11 +40,7 @@ class pgAgent():
         self.episode_count = 0
         self.episode_reward = 0
         self.pre_train_epis = pre_train_epis
-        self.step_reward = np.zeros((len(config.Map.hole_pos)))
-        self.gammas = [1.0]
-        for i in range(len(config.Map.hole_pos)-1):
-            self.gammas.append(self.gammas[-1]*self.gamma)
-        self.gammas.reverse()
+        self.gammas = gamma
 
         self.true_ob_shape = []
         for d in self.ob_shape:
@@ -52,12 +48,8 @@ class pgAgent():
 
         self.test_reward = open("test_reward.txt",'w')
 
-        self.best_postfix = np.zeros((config.Hole_num))
-
         self.nb_city = len(config.Map.city_dis)
         self.nb_hole = len(config.Map.hole_pos)
-        self.evaluate_interval = config.evaluate_interval
-        self.nb_exchange = config.nb_exchange
 
     def fit(self, nb_steps):
         observation = self.env.reset()
@@ -66,8 +58,8 @@ class pgAgent():
             while True:
                 action = self.get_action(observation)
                 self.ob, self.r, done, info = self.env.step(action)
-                observation = self.ob
                 self.save_memory(observation, action, self.r, done, info)
+                observation = self.ob
                 if done:
                     observation = self.env.reset()
                     break
@@ -82,24 +74,15 @@ class pgAgent():
                 # print "train step:", i
                 action = self.get_action(observation)
                 self.ob, self.r, done, info = self.env.step(action)
-                observation = self.ob
                 self.save_memory(observation, action, self.r, done, info)
+                observation = self.ob
                 if done:
-                    # print "before bp time:", (time.time() - time1) / 60
                     batch_ob, batch_action, batch_reward= self.sample_memory(self.batch_size)
                     self.sess.run(self.train_op, feed_dict={
-                        self.tf_obs: np.array(batch_ob),  # shape=[None, n_obs]
-                        self.tf_acts: np.array(batch_action),  # shape=[None, ]
-                        self.tf_vt: batch_reward,  # shape=[None, ]
+                        self.tf_obs: np.array(batch_ob),
+                        self.tf_acts: np.array(batch_action),
+                        self.tf_vt: batch_reward,
                     })
-                    # time.sleep(1)
-                    # print "mean reward: ", np.mean(batch_reward)
-                if done:
-                    # print self.r
-                    # epi_rewards.write(str(self.r)+'\n')
-                    # epi_rewards.write(str(self.env.new_city_hole.tolist())+'\n')
-                    # print "round time:", (time.time() - time1)/60
-                    time1 = time.time()
                     observation = self.env.reset()
                     break
 
@@ -138,7 +121,6 @@ class pgAgent():
     def save_memory(self, state, action, reward, done, v):
         self.memory.append([state, action, reward, done, v]) # pre_sum and v
         if done:
-            self.pre_train_epis -= 1
             current_v = v
             pt = len(self.memory) - 2
             self.episode_count += 1
@@ -164,15 +146,12 @@ class pgAgent():
         batch_reward = np.zeros((batch_size, ))
         # batch_reward = -np.ones((batch_size, ))
         for i in range(batch_size):
-            index = random.randint(1, len(self.memory)-2)
+            index = np.random.randint(len(self.memory))
             # index = -1
             batch_ob[i] = self.memory[index][0]
             batch_action[i] = self.memory[index][1]
-            batch_reward[i] = self.memory[index][2] - self.episode_reward/self.episode_count - self.memory[index][4]
-            #
-            # batch_ob[i] = self.memory[0][0]
-            # batch_action[i] = 1
-            # batch_reward[i] = 10
+            batch_reward[i] = self.memory[index][2] - self.memory[index][4] - self.episode_reward/self.episode_count
+
         # print batch_reward
 
         return batch_ob, batch_action, batch_reward
